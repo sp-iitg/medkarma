@@ -265,7 +265,7 @@ const counterObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.stat-num[data-target]').forEach(el => counterObserver.observe(el));
 
 // ═══════════════════════════════════════════════
-//   RIPPLE EFFECT ON BUTTONS
+//   RIPPLE + ANIMATION KEYFRAMES
 // ═══════════════════════════════════════════════
 const styleEl = document.createElement('style');
 styleEl.textContent = `
@@ -320,7 +320,7 @@ if (ticker) {
 }
 
 // ═══════════════════════════════════════════════
-//   SWIPE DETECTION ON TESTIMONIALS
+//   SWIPE ON TESTIMONIALS
 // ═══════════════════════════════════════════════
 (function initSwipe() {
   const scroll = document.querySelector('.testimonial-scroll');
@@ -410,101 +410,47 @@ if (heroLogo) {
   }
 }
 
+// ═══════════════════════════════════════════════
+//   APK DOWNLOAD — GitHub Releases
+//   No API key needed! Direct link to release asset.
+//   Update APK_URL below when you publish a new release.
+// ═══════════════════════════════════════════════
+(function initApkDownload() {
+  // ── UPDATE THIS URL when you publish a new GitHub Release ──
+  // Steps: github.com/sp-iitg/medkarma → Releases → New Release
+  // Upload your APK with filename: MedKarma.apk
+  // Tag: v1.0  (or bump to v1.1, v2.0 etc. for updates)
+  const APK_URL      = 'https://github.com/sp-iitg/medkarma/releases/latest/download/MedKarma.apk';
+  const APK_FILENAME = 'MedKarma.apk';
+
+  const btn      = document.getElementById('apk-download-btn');
+  const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    // Animate button
+    btn.classList.add('loading');
+    if (subLabel) subLabel.textContent = 'Starting download…';
+    showToast('📥 Downloading MedKarma APK…', 'success');
+
+    // Create invisible link and click it
+    const a = document.createElement('a');
+    a.href     = APK_URL;
+    a.download = APK_FILENAME;
+    a.target   = '_blank';
+    a.rel      = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 500);
+
+    // Reset button after 2s
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      if (subLabel) subLabel.textContent = 'Free Android App • APK';
+    }, 2000);
+  });
+})();
+
 console.log('%c🎓 MedKarma', 'font-size:24px;font-weight:900;color:#a855f7;');
 console.log('%cOwner: Sagir | Admin: Shuvajit', 'font-size:12px;color:#94a3b8;');
 console.log('%cJoin us: https://t.me/themedkarma', 'font-size:12px;color:#06b6d4;');
-
-// ═══════════════════════════════════════════════
-//   APK DOWNLOAD via GOOGLE DRIVE API
-//   API key lives in js/config.js (gitignored)
-//   — never hardcoded here, never in the repo
-// ═══════════════════════════════════════════════
-(function initApkDownload() {
-  // MEDKARMA_CONFIG is defined in js/config.js (gitignored)
-  const cfg           = (typeof MEDKARMA_CONFIG !== 'undefined') ? MEDKARMA_CONFIG : {};
-  const DRIVE_API_KEY = cfg.DRIVE_API_KEY || '';
-  const FOLDER_NAME   = cfg.DRIVE_FOLDER_NAME || 'medkarma apk';
-  const btn           = document.getElementById('apk-download-btn');
-  const subLabel      = btn ? btn.querySelector('.btn-apk-sub') : null;
-
-  if (!btn) return;
-
-  if (!DRIVE_API_KEY) {
-    if (subLabel) subLabel.textContent = 'Config missing — see config.js';
-    btn.style.opacity = '0.5';
-    btn.title = 'Add your Drive API key to js/config.js';
-    return;
-  }
-
-  let cachedFileId = null;
-
-  async function findFolderThenApk() {
-    const folderQuery = encodeURIComponent(
-      `name='${FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
-    );
-    const folderResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${DRIVE_API_KEY}`
-    );
-    if (!folderResp.ok) throw new Error('Drive API error (folder search)');
-    const folderData = await folderResp.json();
-
-    if (!folderData.files || folderData.files.length === 0) {
-      throw new Error('Folder "' + FOLDER_NAME + '" not found. Make sure it is shared with "Anyone with the link".');
-    }
-
-    const folderId = folderData.files[0].id;
-
-    const apkQuery = encodeURIComponent(
-      `'${folderId}' in parents and name contains '.apk' and trashed=false`
-    );
-    const apkResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files?q=${apkQuery}&fields=files(id,name,size)&orderBy=modifiedTime desc&key=${DRIVE_API_KEY}`
-    );
-    if (!apkResp.ok) throw new Error('Drive API error (APK search)');
-    const apkData = await apkResp.json();
-
-    if (!apkData.files || apkData.files.length === 0) {
-      throw new Error('No APK file found inside "' + FOLDER_NAME + '" folder.');
-    }
-
-    return apkData.files[0];
-  }
-
-  function setLoading(isLoading) {
-    btn.classList.toggle('loading', isLoading);
-    if (subLabel) {
-      subLabel.textContent = isLoading ? 'Fetching from Drive…' : 'Free Android App • APK';
-    }
-  }
-
-  function triggerDownload(fileId, fileName) {
-    const url = `https://drive.google.com/uc?export=download&id=${fileId}`;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName || 'MedKarma.apk';
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 1000);
-  }
-
-  btn.addEventListener('click', async () => {
-    if (btn.classList.contains('loading')) return;
-    try {
-      setLoading(true);
-      if (!cachedFileId) {
-        showToast('🔍 Finding your APK on Drive…', 'info');
-        const file = await findFolderThenApk();
-        cachedFileId = { id: file.id, name: file.name };
-      }
-      showToast('📥 Starting download…', 'success');
-      triggerDownload(cachedFileId.id, cachedFileId.name);
-    } catch (err) {
-      console.error('[APK Download]', err);
-      showToast('⚠️ ' + (err.message || 'Download failed. Check Drive sharing.'), 'warning');
-    } finally {
-      setTimeout(() => setLoading(false), 1500);
-    }
-  });
-})();
