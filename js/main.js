@@ -411,17 +411,13 @@ if (heroLogo) {
 }
 
 // ═══════════════════════════════════════════════
-//   APK DOWNLOAD — GitHub Releases
-//   No API key needed! Direct link to release asset.
-//   Update APK_URL below when you publish a new release.
+//   APK DOWNLOAD — Google Drive Direct Link
+//   No API key needed!
 // ═══════════════════════════════════════════════
 (function initApkDownload() {
-  // ── UPDATE THIS URL when you publish a new GitHub Release ──
-  // Steps: github.com/sp-iitg/medkarma → Releases → New Release
-  // Upload your APK with filename: MedKarma.apk
-  // Tag: v1.0  (or bump to v1.1, v2.0 etc. for updates)
-  const APK_URL      = 'https://github.com/sp-iitg/medkarma/releases/latest/download/MedKarma.apk';
-  const APK_FILENAME = 'MedKarma.apk';
+  // Direct download link generated from Google Drive file ID: 1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG
+  const APK_URL      = 'https://drive.google.com/uc?export=download&id=1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG';
+  const APK_FILENAME = 'TheMedkarma-1-v1.0.apk';
 
   const btn      = document.getElementById('apk-download-btn');
   const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
