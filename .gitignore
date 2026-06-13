@@ -1,5 +1,6 @@
-# Never commit credentials
+# Never commit credentials or real config
 service-account.json
+js/config.js
 *.key
 *.pem
 .env
