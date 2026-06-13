@@ -1,0 +1,6 @@
+# Never commit credentials
+service-account.json
+*.key
+*.pem
+.env
+.env.*

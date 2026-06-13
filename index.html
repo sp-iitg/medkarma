@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a1a" />
+  <meta name="description" content="MedKarma — Your ultimate free study material hub for JEE, NEET, and West Bengal Board. Join our Telegram channel for notes, PYQs, mock tests, and more!" />
+  <meta name="keywords" content="JEE study material, NEET notes, West Bengal Board, free PDF, MedKarma, Telegram, Sagir, Shuvajit" />
+  <meta name="author" content="MedKarma | Sagir" />
+  <meta property="og:title" content="MedKarma — JEE | NEET | WB Board Study Hub" />
+  <meta property="og:description" content="Free study materials for JEE, NEET & WB Board. Join the MedKarma Telegram channel!" />
+  <meta property="og:image" content="assets/logo.png" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <title>MedKarma — JEE | NEET | WB Board Free Study Material</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════
+       SPLASH SCREEN
+       ══════════════════════════════════════════ -->
+  <div class="splash" id="splash" role="status" aria-label="Loading MedKarma">
+    <img src="assets/logo.png" alt="MedKarma Logo" class="splash-logo" />
+    <div class="splash-text">
+      <span class="med">Med</span><span class="karma">Karma</span>
+    </div>
+    <div class="splash-loader">
+      <div class="splash-loader-bar"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       3D PARTICLE CANVAS
+       ══════════════════════════════════════════ -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+  <!-- ══════════════════════════════════════════
+       ANIMATED BACKGROUND
+       ══════════════════════════════════════════ -->
+  <div class="bg-canvas" aria-hidden="true">
+    <div class="stars"></div>
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+    <div class="bg-orb bg-orb-3"></div>
+    <div class="bg-blob"></div>
+  </div>
+
+  <!-- Parallax depth orbs -->
+  <div class="parallax-orb parallax-orb-a" aria-hidden="true"></div>
+  <div class="parallax-orb parallax-orb-b" aria-hidden="true"></div>
+
+  <!-- ══════════════════════════════════════════
+       MAIN WRAPPER
+       ══════════════════════════════════════════ -->
+  <div class="wrapper">
+
+    <!-- ─── ANNOUNCEMENT TICKER ─── -->
+    <div class="ticker-wrap" aria-label="Announcements">
+      <div class="ticker-track">
+        <span class="ticker-item">🎉 New JEE 2025 PYQs uploaded!</span>
+        <span class="ticker-item">📚 NEET Biology Handwritten Notes available</span>
+        <span class="ticker-item">🔥 WB Board Class 12 Physics Short Notes</span>
+        <span class="ticker-item">🌟 Join 10,000+ students on Telegram</span>
+        <span class="ticker-item">📝 Free Mock Tests every Sunday</span>
+        <span class="ticker-item">⚡ Chemistry Formula Sheet — JEE Mains 2025</span>
+        <span class="ticker-item">🎯 NEET Biology NCERT Highlights uploaded</span>
+      </div>
+    </div>
+
+    <!-- ─── NAVBAR ─── -->
+    <header>
+      <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <a href="#home" class="nav-logo" aria-label="MedKarma Home">
+          <img src="assets/logo.png" alt="MedKarma Logo" class="nav-logo-img" />
+          <div class="nav-brand">
+            <span class="med">Med</span><span class="karma">Karma</span>
+          </div>
+        </a>
+        <a href="https://t.me/themedkarma" class="nav-tg-btn" target="_blank" rel="noopener noreferrer" aria-label="Join MedKarma Telegram Channel">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M11.944 0A12 12 0 1 0 24 12 12.017 12.017 0 0 0 11.944 0Zm.01 2.25A9.75 9.75 0 1 1 2.25 12 9.762 9.762 0 0 1 11.954 2.25ZM5.75 11.5l9.25-3.75-1.5 7.5-2.75-2.25-1.5 1.5-.5-3 3-2.75-3.5 1.5-2.5-.75Z"/>
+          </svg>
+          Join Free
+        </a>
+      </nav>
+    </header>
+
+    <!-- ─── HERO SECTION ─── -->
+    <main>
+      <section class="hero" id="home" aria-labelledby="hero-title">
+        <div class="hero-badge" role="status">
+          <div class="hero-badge-dot" aria-hidden="true"></div>
+          🎓 Free Study Materials for Everyone
+        </div>
+
+        <div class="hero-logo-wrap" aria-hidden="true">
+          <div class="hero-logo-ring-3"></div>
+          <div class="hero-logo-ring-2"></div>
+          <div class="hero-logo-ring"></div>
+          <img src="assets/logo.png" alt="MedKarma Logo" class="hero-logo" />
+        </div>
+
+        <!-- 3D floating molecule decoration -->
+        <div class="molecule-3d" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="20" r="8" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.9"/>
+            <circle cx="78" cy="65" r="6" fill="none" stroke="#a855f7" stroke-width="2" opacity="0.9"/>
+            <circle cx="22" cy="65" r="6" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.9"/>
+            <circle cx="50" cy="50" r="4" fill="#06b6d4" opacity="0.7"/>
+            <line x1="50" y1="28" x2="50" y2="46" stroke="rgba(6,182,212,0.5)" stroke-width="1.5"/>
+            <line x1="74" y1="62" x2="54" y2="52" stroke="rgba(168,85,247,0.5)" stroke-width="1.5"/>
+            <line x1="26" y1="62" x2="46" y2="52" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>
+          </svg>
+        </div>
+
+        <h1 class="hero-title" id="hero-title">
+          <span class="med">Med</span><span class="karma">Karma</span>
+        </h1>
+        <p class="hero-tagline">Your Ultimate Study Companion 🚀</p>
+        <p class="hero-sub">JEE &nbsp;•&nbsp; NEET &nbsp;•&nbsp; West Bengal Board</p>
+
+        <div class="hero-cta">
+          <a href="https://t.me/themedkarma" class="btn-primary" target="_blank" rel="noopener noreferrer" id="hero-join-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M22.265 2.428a2.048 2.048 0 0 0-2.078-.324L2.266 9.339a2.043 2.043 0 0 0 .104 3.818l4.3 1.393 1.765 5.581a.992.992 0 0 0 1.715.363l2.551-2.908 4.679 3.5a2.054 2.054 0 0 0 3.234-1.149l2.895-16.19a2.043 2.043 0 0 0-.244-1.319ZM10.4 14.93l-1.2 3.452-.987-3.486 9.172-7.624L10.4 14.93Z"/>
+            </svg>
+            Join Telegram Channel
+          </a>
+          <a href="#exams" class="btn-secondary" id="hero-explore-btn">
+            📚 Explore Materials
+          </a>
+
+          <!-- ─── APK DOWNLOAD BUTTON ─── -->
+          <button class="btn-apk" id="apk-download-btn" aria-label="Download MedKarma Android App">
+            <span class="btn-apk-badge">NEW</span>
+            <span class="btn-apk-icon" aria-hidden="true">
+              <!-- Android robot icon -->
+              <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zm-2.5-1C2.67 17 2 17.67 2 18.5v-9C2 8.67 2.67 8 3.5 8S5 8.67 5 9.5v9C5 19.33 4.33 20 3.5 20zM20.5 8C19.67 8 19 8.67 19 9.5v9c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C7.03 3.07 6 4.65 6 6.5c0 .17.02.33.03.5h11.94c.01-.17.03-.33.03-.5 0-1.85-1.03-3.43-2.47-4.34zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+              </svg>
+            </span>
+            <span class="btn-apk-text">
+              <span class="btn-apk-label">Download MedKarma</span>
+              <span class="btn-apk-sub">Free Android App • APK</span>
+            </span>
+            <span class="btn-apk-arrow" aria-hidden="true">
+              <!-- Download arrow -->
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ─── STATS BAR ─── -->
+      <div class="stats-bar reveal" aria-label="Channel Statistics">
+        <div class="stat-item">
+          <span class="stat-num" data-target="10000" data-suffix="+">0</span>
+          <span class="stat-label">Students</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="500" data-suffix="+">0</span>
+          <span class="stat-label">Materials</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="3" data-suffix="">0</span>
+          <span class="stat-label">Exams Covered</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="100" data-suffix="%">0</span>
+          <span class="stat-label">Free</span>
+        </div>
+      </div>
+
+      <!-- ─── EXAMS SECTION ─── -->
+      <section class="section" id="exams" aria-labelledby="exams-title">
+        <div class="section-header reveal">
+          <div class="section-tag">📋 Exams Covered</div>
+          <h2 class="section-title" id="exams-title">
+            What We <span class="highlight">Cover</span>
+          </h2>
+          <p class="section-desc">
+            Comprehensive study materials crafted for India's most competitive exams
+          </p>
+        </div>
+
+        <div class="exam-grid">
+
+          <!-- JEE Card -->
+          <a href="https://t.me/themedkarma" class="exam-card jee reveal" target="_blank" rel="noopener noreferrer" id="jee-card" aria-label="JEE Study Materials">
+            <div class="exam-icon" aria-hidden="true">⚛️</div>
+            <div class="exam-info">
+              <div class="exam-name">JEE Mains & Advanced</div>
+              <p class="exam-desc">Complete notes, PYQs & mock tests for IIT/NIT aspirants</p>
+              <div class="exam-tags">
+                <span class="exam-tag">Physics</span>
+                <span class="exam-tag">Chemistry</span>
+                <span class="exam-tag">Maths</span>
+              </div>
+            </div>
+            <div class="exam-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </div>
+          </a>
+
+          <!-- NEET Card -->
+          <a href="https://t.me/themedkarma" class="exam-card neet reveal" target="_blank" rel="noopener noreferrer" id="neet-card" aria-label="NEET Study Materials">
+            <div class="exam-icon" aria-hidden="true">🔬</div>
+            <div class="exam-info">
+              <div class="exam-name">NEET UG</div>
+              <p class="exam-desc">Handwritten notes, NCERT highlights & biology diagrams</p>
+              <div class="exam-tags">
+                <span class="exam-tag">Biology</span>
+                <span class="exam-tag">Chemistry</span>
+                <span class="exam-tag">Physics</span>
+              </div>
+            </div>
+            <div class="exam-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </div>
+          </a>
+
+          <!-- WB Board Card -->
+          <a href="https://t.me/themedkarma" class="exam-card wb reveal" target="_blank" rel="noopener noreferrer" id="wb-card" aria-label="West Bengal Board Study Materials">
+            <div class="exam-icon" aria-hidden="true">📖</div>
+            <div class="exam-info">
+              <div class="exam-name">WB Board (Class 9–12)</div>
+              <p class="exam-desc">Madhyamik, HS materials aligned with WBBSE & WBCHSE syllabus</p>
+              <div class="exam-tags">
+                <span class="exam-tag">Class 9</span>
+                <span class="exam-tag">Class 10</span>
+                <span class="exam-tag">Class 11</span>
+                <span class="exam-tag">Class 12</span>
+              </div>
+            </div>
+            <div class="exam-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- ─── FEATURES SECTION ─── -->
+      <section class="section" id="features" aria-labelledby="features-title">
+        <div class="section-header reveal">
+          <div class="section-tag">✨ Why Choose Us</div>
+          <h2 class="section-title" id="features-title">
+            Why <span class="highlight">MedKarma</span>?
+          </h2>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card reveal" id="feature-free">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">🆓</span>
+                <div class="feature-title">100% Free</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">🆓</span>
+                <div class="feature-text">All resources completely free forever — no hidden costs!</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card reveal" id="feature-quality">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">⭐</span>
+                <div class="feature-title">Top Quality</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">⭐</span>
+                <div class="feature-text">Curated, accurate &amp; exam-relevant content by toppers.</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card reveal" id="feature-instant">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">⚡</span>
+                <div class="feature-title">Instant Access</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">⚡</span>
+                <div class="feature-text">Download instantly on Telegram — one tap away!</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card reveal" id="feature-updated">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">🔄</span>
+                <div class="feature-title">Always Updated</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">🔄</span>
+                <div class="feature-text">New materials added every week — stay ahead!</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card reveal" id="feature-pyq">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">📝</span>
+                <div class="feature-title">PYQ Bank</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">📝</span>
+                <div class="feature-text">10+ years of previous year questions with solutions.</div>
+              </div>
+            </div>
+          </div>
+          <div class="feature-card reveal" id="feature-mock">
+            <div class="feature-card-inner">
+              <div class="feature-card-front">
+                <span class="feature-icon">🎯</span>
+                <div class="feature-title">Mock Tests</div>
+              </div>
+              <div class="feature-card-back">
+                <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">🎯</span>
+                <div class="feature-text">Weekly free mock tests with detailed solutions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── MATERIALS SECTION ─── -->
+      <section class="section" id="materials" aria-labelledby="materials-title">
+        <div class="section-header reveal">
+          <div class="section-tag">📥 Study Resources</div>
+          <h2 class="section-title" id="materials-title">
+            Popular <span class="highlight">Materials</span>
+          </h2>
+          <p class="section-desc">Browse by subject — all available on our Telegram channel</p>
+        </div>
+
+        <!-- Subject Filter Chips -->
+        <div class="subjects-scroll reveal" role="tablist" aria-label="Filter by subject">
+          <button class="subject-chip active" data-filter="all" role="tab" aria-selected="true" id="filter-all">📚 All</button>
+          <button class="subject-chip" data-filter="physics" role="tab" aria-selected="false" id="filter-physics">⚛️ Physics</button>
+          <button class="subject-chip" data-filter="chemistry" role="tab" aria-selected="false" id="filter-chemistry">🧪 Chemistry</button>
+          <button class="subject-chip" data-filter="biology" role="tab" aria-selected="false" id="filter-biology">🔬 Biology</button>
+          <button class="subject-chip" data-filter="maths" role="tab" aria-selected="false" id="filter-maths">📐 Maths</button>
+        </div>
+
+        <div class="materials-grid" role="tabpanel">
+
+          <div class="material-item reveal" data-subject="physics" id="mat-1">
+            <div class="material-icon-wrap" aria-hidden="true">⚡</div>
+            <div class="material-info">
+              <div class="material-title">Physics Formulas — JEE Mains</div>
+              <div class="material-meta">Complete formula sheet • PDF • 24 pages</div>
+            </div>
+            <span class="material-badge badge-free">FREE</span>
+          </div>
+
+          <div class="material-item reveal" data-subject="biology" id="mat-2">
+            <div class="material-icon-wrap" aria-hidden="true">🧬</div>
+            <div class="material-info">
+              <div class="material-title">Biology NCERT Highlights — NEET</div>
+              <div class="material-meta">Class 11 + 12 • Handwritten • 80 pages</div>
+            </div>
+            <span class="material-badge badge-hot">🔥 HOT</span>
+          </div>
+
+          <div class="material-item reveal" data-subject="chemistry" id="mat-3">
+            <div class="material-icon-wrap" aria-hidden="true">🧪</div>
+            <div class="material-info">
+              <div class="material-title">Organic Chemistry Reactions</div>
+              <div class="material-meta">JEE + NEET • Color notes • 56 pages</div>
+            </div>
+            <span class="material-badge badge-new">NEW</span>
+          </div>
+
+          <div class="material-item reveal" data-subject="maths" id="mat-4">
+            <div class="material-icon-wrap" aria-hidden="true">📐</div>
+            <div class="material-info">
+              <div class="material-title">Calculus Short Notes — JEE</div>
+              <div class="material-meta">Limits, Derivatives, Integration • 32 pages</div>
+            </div>
+            <span class="material-badge badge-free">FREE</span>
+          </div>
+
+          <div class="material-item reveal" data-subject="physics" id="mat-5">
+            <div class="material-icon-wrap" aria-hidden="true">🔭</div>
+            <div class="material-info">
+              <div class="material-title">WB Board Physics — Class 12 HS</div>
+              <div class="material-meta">WBCHSE Syllabus • Short notes • 48 pages</div>
+            </div>
+            <span class="material-badge badge-new">NEW</span>
+          </div>
+
+          <div class="material-item reveal" data-subject="chemistry" id="mat-6">
+            <div class="material-icon-wrap" aria-hidden="true">⚗️</div>
+            <div class="material-info">
+              <div class="material-title">Periodic Table Tricks & Mnemonics</div>
+              <div class="material-meta">JEE + NEET + WB Board • Memory aids</div>
+            </div>
+            <span class="material-badge badge-hot">🔥 HOT</span>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ─── TESTIMONIALS ─── -->
+      <section class="section" id="reviews" aria-labelledby="reviews-title">
+        <div class="section-header reveal">
+          <div class="section-tag">💬 Student Reviews</div>
+          <h2 class="section-title" id="reviews-title">
+            What Students <span class="highlight">Say</span>
+          </h2>
+        </div>
+
+        <div class="testimonial-scroll reveal" aria-label="Student testimonials">
+
+          <article class="testimonial-card">
+            <div class="testimonial-quote" aria-hidden="true">"</div>
+            <p class="testimonial-text">MedKarma's NEET biology notes are absolutely gold! Cleared my NEET with 680+ marks. Thank you Sagir bhai! 🙏</p>
+            <div class="testimonial-author">
+              <div class="author-avatar" style="background: linear-gradient(135deg, #7c3aed, #ec4899);" aria-hidden="true">A</div>
+              <div>
+                <div class="author-name">Ananya Roy</div>
+                <div class="author-detail">NEET 2024 Qualified</div>
+                <div class="stars-rating" aria-label="5 stars">
+                  <span>★★★★★</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="testimonial-card">
+            <div class="testimonial-quote" aria-hidden="true">"</div>
+            <p class="testimonial-text">Got JEE Mains 99 percentile using MedKarma's formula sheets. Best free resource out there. Highly recommend!</p>
+            <div class="testimonial-author">
+              <div class="author-avatar" style="background: linear-gradient(135deg, #06b6d4, #10b981);" aria-hidden="true">R</div>
+              <div>
+                <div class="author-name">Rahul Mondal</div>
+                <div class="author-detail">JEE Mains 2024</div>
+                <div class="stars-rating" aria-label="5 stars">
+                  <span>★★★★★</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="testimonial-card">
+            <div class="testimonial-quote" aria-hidden="true">"</div>
+            <p class="testimonial-text">WB Board HS notes from MedKarma saved me. Scored 92% in Class 12. Admin Shuvajit da is super helpful too!</p>
+            <div class="testimonial-author">
+              <div class="author-avatar" style="background: linear-gradient(135deg, #f59e0b, #ec4899);" aria-hidden="true">P</div>
+              <div>
+                <div class="author-name">Priya Das</div>
+                <div class="author-detail">WB Board HS 2024</div>
+                <div class="stars-rating" aria-label="5 stars">
+                  <span>★★★★★</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="testimonial-card">
+            <div class="testimonial-quote" aria-hidden="true">"</div>
+            <p class="testimonial-text">Chemistry organic notes are phenomenal. Perfect for both JEE &amp; NEET. This channel deserves way more recognition!</p>
+            <div class="testimonial-author">
+              <div class="author-avatar" style="background: linear-gradient(135deg, #10b981, #06b6d4);" aria-hidden="true">S</div>
+              <div>
+                <div class="author-name">Souvik Ghosh</div>
+                <div class="author-detail">JEE Advanced Qualifier</div>
+                <div class="stars-rating" aria-label="5 stars">
+                  <span>★★★★★</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ─── TELEGRAM CTA ─── -->
+      <div class="tg-cta reveal" id="join">
+        <span class="tg-cta-icon" aria-hidden="true">✈️</span>
+        <h2>Join <span class="shimmer-text">MedKarma</span> Today!</h2>
+        <p>Get instant access to 500+ free study materials.<br/>New uploads every week. 100% free. No catch.</p>
+        <a href="https://t.me/themedkarma" class="btn-telegram" target="_blank" rel="noopener noreferrer" id="tg-join-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22" aria-hidden="true">
+            <path d="M22.265 2.428a2.048 2.048 0 0 0-2.078-.324L2.266 9.339a2.043 2.043 0 0 0 .104 3.818l4.3 1.393 1.765 5.581a.992.992 0 0 0 1.715.363l2.551-2.908 4.679 3.5a2.054 2.054 0 0 0 3.234-1.149l2.895-16.19a2.043 2.043 0 0 0-.244-1.319ZM10.4 14.93l-1.2 3.452-.987-3.486 9.172-7.624L10.4 14.93Z"/>
+          </svg>
+          Join @themedkarma Now — It's Free!
+        </a>
+      </div>
+
+      <!-- ─── ABOUT SECTION ─── -->
+      <section class="section" id="about" aria-labelledby="about-title">
+        <div class="section-header reveal">
+          <div class="section-tag">👥 About Us</div>
+          <h2 class="section-title" id="about-title">
+            Meet the <span class="highlight">Team</span>
+          </h2>
+        </div>
+
+        <div class="about-card reveal">
+          <p class="about-intro">
+            <strong style="color: var(--accent-cyan);">MedKarma</strong> was founded with a simple mission: make quality study materials accessible to every student, regardless of their financial situation. We believe great education shouldn't have a price tag.
+            <br/><br/>
+            Our Telegram channel provides free, curated study materials for <strong>JEE Mains & Advanced</strong>, <strong>NEET UG</strong>, and <strong>West Bengal Board (Class 9–12)</strong> — all hand-picked for quality and exam relevance.
+          </p>
+
+          <div class="team-grid">
+            <div class="team-card" id="team-owner">
+              <div class="team-avatar" aria-hidden="true">👑</div>
+              <div class="team-name">Sagir</div>
+              <div class="team-role">Founder & Owner</div>
+            </div>
+            <div class="team-card" id="team-admin">
+              <div class="team-avatar" aria-hidden="true">🛡️</div>
+              <div class="team-name">Shuvajit</div>
+              <div class="team-role">Web Admin</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main><!-- /main -->
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="footer" role="contentinfo">
+      <div class="footer-logo">
+        <img src="assets/logo.png" alt="MedKarma Logo" width="36" height="36" />
+        <div class="footer-brand">
+          <span class="med">Med</span><span class="karma">Karma</span>
+        </div>
+      </div>
+
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#home">Home</a>
+        <a href="#exams">Exams</a>
+        <a href="#materials">Materials</a>
+        <a href="#about">About</a>
+      </nav>
+
+      <div class="footer-social" aria-label="Social links">
+        <a href="https://t.me/themedkarma" class="social-btn" target="_blank" rel="noopener noreferrer" aria-label="Telegram Channel" title="Telegram">
+          ✈️
+        </a>
+        <a href="#" class="social-btn" aria-label="Share this site" title="Share">
+          🔗
+        </a>
+      </div>
+
+      <p class="footer-copy">
+        Made with <span class="heart" aria-hidden="true">❤️</span> by MedKarma Team<br/>
+        &copy; <span id="year"></span> MedKarma &mdash; All resources free for students<br/>
+        <small style="color: var(--text-muted);">Owner: Sagir &nbsp;|&nbsp; Web Admin: Shuvajit</small>
+      </p>
+    </footer>
+
+  </div><!-- /wrapper -->
+
+  <!-- ─── FLOATING TELEGRAM BUTTON ─── -->
+  <a href="https://t.me/themedkarma" class="fab" target="_blank" rel="noopener noreferrer" aria-label="Join MedKarma on Telegram" id="fab-telegram">
+    <span class="fab-label">Join Telegram</span>
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22.265 2.428a2.048 2.048 0 0 0-2.078-.324L2.266 9.339a2.043 2.043 0 0 0 .104 3.818l4.3 1.393 1.765 5.581a.992.992 0 0 0 1.715.363l2.551-2.908 4.679 3.5a2.054 2.054 0 0 0 3.234-1.149l2.895-16.19a2.043 2.043 0 0 0-.244-1.319ZM10.4 14.93l-1.2 3.452-.987-3.486 9.172-7.624L10.4 14.93Z"/>
+    </svg>
+  </a>
+
+  <script src="js/main.js" defer></script>
+</body>
+</html>
