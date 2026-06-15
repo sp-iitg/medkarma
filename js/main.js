@@ -415,38 +415,424 @@ if (heroLogo) {
 //   No API key needed!
 // ═══════════════════════════════════════════════
 (function initApkDownload() {
-  // Direct download link generated from Google Drive file ID: 1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG
+  // 1. MedKarma App Download
   const APK_URL      = 'https://drive.google.com/uc?export=download&id=1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG';
   const APK_FILENAME = 'TheMedkarma-1-v1.0.apk';
-
   const btn      = document.getElementById('apk-download-btn');
   const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
-  if (!btn) return;
+  
+  if (btn) {
+    btn.addEventListener('click', () => {
+      btn.classList.add('loading');
+      if (subLabel) subLabel.textContent = 'Starting download…';
+      showToast('📥 Downloading MedKarma APK…', 'success');
 
-  btn.addEventListener('click', () => {
-    // Animate button
-    btn.classList.add('loading');
-    if (subLabel) subLabel.textContent = 'Starting download…';
-    showToast('📥 Downloading MedKarma APK…', 'success');
+      const a = document.createElement('a');
+      a.href     = APK_URL;
+      a.download = APK_FILENAME;
+      a.target   = '_blank';
+      a.rel      = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 500);
 
-    // Create invisible link and click it
-    const a = document.createElement('a');
-    a.href     = APK_URL;
-    a.download = APK_FILENAME;
-    a.target   = '_blank';
-    a.rel      = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 500);
+      setTimeout(() => {
+        btn.classList.remove('loading');
+        if (subLabel) subLabel.textContent = 'Free Android App • APK';
+      }, 2000);
+    });
+  }
 
-    // Reset button after 2s
-    setTimeout(() => {
-      btn.classList.remove('loading');
-      if (subLabel) subLabel.textContent = 'Free Android App • APK';
-    }, 2000);
+  // 2. Chemistry Companion App Download
+  const CHEM_URL      = 'https://drive.google.com/uc?export=download&id=1G64AbjMw04fv3PAmyPdybWUqakYzgXqF';
+  const CHEM_FILENAME = 'ChemistryVisualized.apk';
+  const chemBtn      = document.getElementById('apk-chem-btn');
+  const chemSubLabel = chemBtn ? chemBtn.querySelector('.btn-apk-sub') : null;
+
+  if (chemBtn) {
+    chemBtn.addEventListener('click', () => {
+      chemBtn.classList.add('loading');
+      if (chemSubLabel) chemSubLabel.textContent = 'Starting download…';
+      showToast('📥 Downloading Chemistry Companion APK…', 'success');
+
+      const a = document.createElement('a');
+      a.href     = CHEM_URL;
+      a.download = CHEM_FILENAME;
+      a.target   = '_blank';
+      a.rel      = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 500);
+
+      setTimeout(() => {
+        chemBtn.classList.remove('loading');
+        if (chemSubLabel) chemSubLabel.textContent = 'Companion App • 3D APK';
+      }, 2000);
+    });
+  }
+})();
+
+// ═══════════════════════════════════════════════
+//   INTERACTIVE 3D STUDY LAB (THREE.JS)
+// ═══════════════════════════════════════════════
+(function init3DLab() {
+  const container = document.getElementById('3d-canvas-container');
+  if (!container) return;
+
+  // Wait for THREE to load
+  if (typeof THREE === 'undefined') {
+    setTimeout(init3DLab, 100);
+    return;
+  }
+
+  let scene, camera, renderer, controls;
+  let currentModel = null;
+  let activeModelName = 'dna';
+  const models = {};
+
+  // Setup Scene, Camera, Renderer
+  function initScene() {
+    scene = new THREE.Scene();
+
+    const width = container.clientWidth || 320;
+    const height = container.clientHeight || 320;
+
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+    camera.position.set(0, 0, 16);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Orbit Controls
+    if (typeof THREE.OrbitControls !== 'undefined') {
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+    } else if (typeof OrbitControls !== 'undefined') {
+      controls = new OrbitControls(camera, renderer.domElement);
+    } else {
+      controls = new window.OrbitControls(camera, renderer.domElement);
+    }
+    
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enableZoom = true;
+    controls.minDistance = 6;
+    controls.maxDistance = 22;
+    controls.enablePan = false;
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0x06b6d4, 1.5);
+    dirLight1.position.set(10, 10, 10);
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xec4899, 1.2);
+    dirLight2.position.set(-10, -10, 10);
+    scene.add(dirLight2);
+
+    const pointLight = new THREE.PointLight(0xa855f7, 2.5, 30);
+    pointLight.position.set(0, 0, 0);
+    scene.add(pointLight);
+
+    // Build models
+    buildDNA();
+    buildChemistry();
+    buildPhysics();
+
+    // Set initial model
+    switchModel('dna');
+
+    // Start animation loop
+    animate();
+  }
+
+  // Model 1: DNA Double Helix
+  function buildDNA() {
+    const group = new THREE.Group();
+    const strandGeom = new THREE.SphereGeometry(0.22, 16, 16);
+    const cyanMat = new THREE.MeshPhongMaterial({ color: 0x06b6d4, emissive: 0x014c59, shininess: 30 });
+    const pinkMat = new THREE.MeshPhongMaterial({ color: 0xec4899, emissive: 0x611039, shininess: 30 });
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
+
+    const numPoints = 28;
+    const r = 2.6;
+    const height = 9;
+
+    for (let i = 0; i < numPoints; i++) {
+      const t = (i / numPoints) * Math.PI * 4;
+      const y = (i / numPoints) * height - height / 2;
+
+      // Strand A
+      const xA = r * Math.cos(t);
+      const zA = r * Math.sin(t);
+      const sphereA = new THREE.Mesh(strandGeom, cyanMat);
+      sphereA.position.set(xA, y, zA);
+      group.add(sphereA);
+
+      // Strand B
+      const xB = r * Math.cos(t + Math.PI);
+      const zB = r * Math.sin(t + Math.PI);
+      const sphereB = new THREE.Mesh(strandGeom, pinkMat);
+      sphereB.position.set(xB, y, zB);
+      group.add(sphereB);
+
+      // Connect rungs
+      const points = [];
+      points.push(new THREE.Vector3(xA, y, zA));
+      points.push(new THREE.Vector3(xB, y, zB));
+      
+      const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
+      const rung = new THREE.Line(lineGeom, lineMat);
+      group.add(rung);
+    }
+
+    models.dna = group;
+  }
+
+  // Model 2: Carbon Buckyball (C60 Fullerene representation)
+  function buildChemistry() {
+    const group = new THREE.Group();
+    
+    // We construct a molecular structure from an Icosahedron
+    const geom = new THREE.IcosahedronGeometry(3.0, 1);
+    
+    // Atom Sphere
+    const atomGeom = new THREE.SphereGeometry(0.18, 16, 16);
+    const atomMat = new THREE.MeshPhongMaterial({ color: 0xa855f7, emissive: 0x3c115c, shininess: 50 });
+
+    const pos = geom.attributes.position;
+    const vertices = [];
+    const threshold = 0.01;
+
+    // Filter unique vertices
+    for (let i = 0; i < pos.count; i++) {
+      const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+      let isDuplicate = false;
+      for (const uniqueV of vertices) {
+        if (uniqueV.distanceTo(v) < threshold) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      if (!isDuplicate) {
+        vertices.push(v);
+      }
+    }
+
+    // Add sphere atoms at vertices
+    vertices.forEach(v => {
+      const sphere = new THREE.Mesh(atomGeom, atomMat);
+      sphere.position.copy(v);
+      group.add(sphere);
+    });
+
+    // Create bonding links between near neighbors
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.5 });
+    for (let i = 0; i < vertices.length; i++) {
+      for (let j = i + 1; j < vertices.length; j++) {
+        const dist = vertices[i].distanceTo(vertices[j]);
+        // Buckyball adjacent vertices are around 1.5 to 2.2 units apart
+        if (dist > 1.2 && dist < 2.2) {
+          const points = [vertices[i], vertices[j]];
+          const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
+          const bond = new THREE.Line(lineGeom, lineMat);
+          group.add(bond);
+        }
+      }
+    }
+
+    models.chem = group;
+  }
+
+  // Model 3: Atomic Orbitals (Physics)
+  function buildPhysics() {
+    const group = new THREE.Group();
+
+    // Central Nucleus
+    const nucleusGeom = new THREE.SphereGeometry(0.7, 32, 32);
+    const nucleusMat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0xa855f7, shininess: 100 });
+    const nucleus = new THREE.Mesh(nucleusGeom, nucleusMat);
+    group.add(nucleus);
+
+    // Orbit Ring paths
+    const numOrbits = 3;
+    const electronGeom = new THREE.SphereGeometry(0.16, 16, 16);
+    const electronMat = new THREE.MeshPhongMaterial({ color: 0x06b6d4, emissive: 0x00363f, shininess: 80 });
+
+    const orbitGroups = [];
+
+    for (let i = 0; i < numOrbits; i++) {
+      const orbitRing = new THREE.Group();
+      
+      // Calculate rotation offset for orbit orientation
+      orbitRing.rotation.x = (Math.random() - 0.5) * Math.PI;
+      orbitRing.rotation.y = (Math.random() - 0.5) * Math.PI;
+      orbitRing.rotation.z = (Math.random() - 0.5) * Math.PI;
+
+      // Draw Orbit Path Ring
+      const radius = 2.8 + i * 0.7;
+      const ringGeom = new THREE.RingGeometry(radius - 0.015, radius + 0.015, 64);
+      ringGeom.rotateX(Math.PI / 2);
+      const ring = new THREE.Mesh(ringGeom, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.12 }));
+      orbitRing.add(ring);
+
+      // Create Electron Sphere
+      const electron = new THREE.Mesh(electronGeom, electronMat);
+      // Store custom properties on electron object
+      electron.userData = {
+        angle: Math.random() * Math.PI * 2,
+        speed: (0.015 + Math.random() * 0.02) * (Math.random() > 0.5 ? 1 : -1),
+        radius: radius
+      };
+      orbitRing.add(electron);
+
+      // Add orbital particles wave/cloud
+      const particleCount = 20;
+      const points = [];
+      for (let p = 0; p < particleCount; p++) {
+        const theta = (p / particleCount) * Math.PI * 2;
+        points.push(new THREE.Vector3(radius * Math.cos(theta), 0, radius * Math.sin(theta)));
+      }
+      
+      const waveMat = new THREE.LineDashedMaterial({
+        color: 0x06b6d4,
+        dashSize: 0.2,
+        gapSize: 0.1,
+        transparent: true,
+        opacity: 0.35
+      });
+      const waveGeom = new THREE.BufferGeometry().setFromPoints(points);
+      const wave = new THREE.LineLoop(waveGeom, waveMat);
+      orbitRing.add(wave);
+
+      group.add(orbitRing);
+      orbitGroups.push(orbitRing);
+    }
+
+    group.userData = { orbitGroups };
+    models.phys = group;
+  }
+
+  // Switch Active Model
+  function switchModel(name) {
+    if (currentModel) {
+      scene.remove(currentModel);
+    }
+    
+    currentModel = models[name];
+    if (currentModel) {
+      currentModel.scale.set(0.01, 0.01, 0.01);
+      scene.add(currentModel);
+      activeModelName = name;
+      
+      // Animate scale in
+      let scale = 0.01;
+      const animIn = () => {
+        if (scale < 1.0) {
+          scale += 0.08;
+          currentModel.scale.set(scale, scale, scale);
+          requestAnimationFrame(animIn);
+        } else {
+          currentModel.scale.set(1, 1, 1);
+        }
+      };
+      animIn();
+    }
+  }
+
+  // Resize handler
+  function handleResize() {
+    if (!renderer || !camera) return;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  }
+
+  window.addEventListener('resize', handleResize);
+
+  // Switcher UI Interaction
+  const switchBtns = document.querySelectorAll('.lab-btn');
+  const infoContents = document.querySelectorAll('.info-content');
+
+  switchBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetModel = btn.dataset.model;
+      if (targetModel === activeModelName) return;
+
+      // Toggle active buttons
+      switchBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      // Toggle active description content
+      infoContents.forEach(info => {
+        info.classList.remove('active');
+      });
+      const activeInfo = document.getElementById(`info-${targetModel}`);
+      if (activeInfo) activeInfo.classList.add('active');
+
+      // Switch the model inside the 3D canvas
+      switchModel(targetModel);
+      
+      // Show dynamic toast feedback
+      if (typeof showToast === 'function') {
+        const label = btn.textContent.trim().split(' ').slice(1).join(' ');
+        showToast(`🔬 Loaded ${label} 3D Model!`, 'success');
+      }
+    });
   });
+
+  // Animation Loop
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // Rotate current model automatically if not dragging
+    if (currentModel) {
+      if (activeModelName === 'dna') {
+        currentModel.rotation.y += 0.006;
+      } else if (activeModelName === 'chem') {
+        currentModel.rotation.y += 0.004;
+        currentModel.rotation.x += 0.002;
+      } else if (activeModelName === 'phys') {
+        // Spin nucleus
+        currentModel.rotation.y += 0.002;
+        
+        // Update electron positions
+        const orbits = currentModel.userData.orbitGroups;
+        if (orbits) {
+          orbits.forEach(orbit => {
+            orbit.children.forEach(child => {
+              if (child.userData && typeof child.userData.angle !== 'undefined') {
+                child.userData.angle += child.userData.speed;
+                child.position.x = child.userData.radius * Math.cos(child.userData.angle);
+                child.position.z = child.userData.radius * Math.sin(child.userData.angle);
+              }
+            });
+          });
+        }
+      }
+    }
+
+    if (controls) {
+      controls.update();
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  // Initialize
+  initScene();
 })();
 
 console.log('%c🎓 MedKarma', 'font-size:24px;font-weight:900;color:#a855f7;');
 console.log('%cOwner: Sagir | Admin: Shuvajit', 'font-size:12px;color:#94a3b8;');
 console.log('%cJoin us: https://t.me/themedkarma', 'font-size:12px;color:#06b6d4;');
+

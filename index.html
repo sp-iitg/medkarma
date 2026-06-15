@@ -94,68 +94,94 @@
     <!-- ─── HERO SECTION ─── -->
     <main>
       <section class="hero" id="home" aria-labelledby="hero-title">
+        <!-- 1. Hero Badge -->
         <div class="hero-badge" role="status">
           <div class="hero-badge-dot" aria-hidden="true"></div>
           🎓 Free Study Materials for Everyone
         </div>
 
-        <div class="hero-logo-wrap" aria-hidden="true">
-          <div class="hero-logo-ring-3"></div>
-          <div class="hero-logo-ring-2"></div>
-          <div class="hero-logo-ring"></div>
-          <img src="assets/logo.png" alt="MedKarma Logo" class="hero-logo" />
-        </div>
+        <!-- 2. Logo Container -->
+        <div class="hero-logo-container">
+          <div class="hero-logo-wrap" aria-hidden="true">
+            <div class="hero-logo-ring-3"></div>
+            <div class="hero-logo-ring-2"></div>
+            <div class="hero-logo-ring"></div>
+            <img src="assets/logo.png" alt="MedKarma Logo" class="hero-logo" />
+          </div>
 
-        <!-- 3D floating molecule decoration -->
-        <div class="molecule-3d" aria-hidden="true">
-          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="20" r="8" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.9"/>
-            <circle cx="78" cy="65" r="6" fill="none" stroke="#a855f7" stroke-width="2" opacity="0.9"/>
-            <circle cx="22" cy="65" r="6" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.9"/>
-            <circle cx="50" cy="50" r="4" fill="#06b6d4" opacity="0.7"/>
-            <line x1="50" y1="28" x2="50" y2="46" stroke="rgba(6,182,212,0.5)" stroke-width="1.5"/>
-            <line x1="74" y1="62" x2="54" y2="52" stroke="rgba(168,85,247,0.5)" stroke-width="1.5"/>
-            <line x1="26" y1="62" x2="46" y2="52" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>
-          </svg>
-        </div>
-
-        <h1 class="hero-title" id="hero-title">
-          <span class="med">Med</span><span class="karma">Karma</span>
-        </h1>
-        <p class="hero-tagline">Your Ultimate Study Companion 🚀</p>
-        <p class="hero-sub">JEE &nbsp;•&nbsp; NEET &nbsp;•&nbsp; West Bengal Board</p>
-
-        <div class="hero-cta">
-          <a href="https://t.me/themedkarma" class="btn-primary" target="_blank" rel="noopener noreferrer" id="hero-join-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M22.265 2.428a2.048 2.048 0 0 0-2.078-.324L2.266 9.339a2.043 2.043 0 0 0 .104 3.818l4.3 1.393 1.765 5.581a.992.992 0 0 0 1.715.363l2.551-2.908 4.679 3.5a2.054 2.054 0 0 0 3.234-1.149l2.895-16.19a2.043 2.043 0 0 0-.244-1.319ZM10.4 14.93l-1.2 3.452-.987-3.486 9.172-7.624L10.4 14.93Z"/>
+          <!-- 3D floating molecule decoration -->
+          <div class="molecule-3d" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="20" r="8" fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.9"/>
+              <circle cx="78" cy="65" r="6" fill="none" stroke="#a855f7" stroke-width="2" opacity="0.9"/>
+              <circle cx="22" cy="65" r="6" fill="none" stroke="#ec4899" stroke-width="2" opacity="0.9"/>
+              <circle cx="50" cy="50" r="4" fill="#06b6d4" opacity="0.7"/>
+              <line x1="50" y1="28" x2="50" y2="46" stroke="rgba(6,182,212,0.5)" stroke-width="1.5"/>
+              <line x1="74" y1="62" x2="54" y2="52" stroke="rgba(168,85,247,0.5)" stroke-width="1.5"/>
+              <line x1="26" y1="62" x2="46" y2="52" stroke="rgba(236,72,153,0.5)" stroke-width="1.5"/>
             </svg>
-            Join Telegram Channel
-          </a>
-          <a href="#exams" class="btn-secondary" id="hero-explore-btn">
-            📚 Explore Materials
-          </a>
+          </div>
+        </div>
 
-          <!-- ─── APK DOWNLOAD BUTTON ─── -->
-          <button class="btn-apk" id="apk-download-btn" aria-label="Download MedKarma Android App">
-            <span class="btn-apk-badge">NEW</span>
-            <span class="btn-apk-icon" aria-hidden="true">
-              <!-- Android robot icon -->
-              <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-                <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zm-2.5-1C2.67 17 2 17.67 2 18.5v-9C2 8.67 2.67 8 3.5 8S5 8.67 5 9.5v9C5 19.33 4.33 20 3.5 20zM20.5 8C19.67 8 19 8.67 19 9.5v9c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C7.03 3.07 6 4.65 6 6.5c0 .17.02.33.03.5h11.94c.01-.17.03-.33.03-.5 0-1.85-1.03-3.43-2.47-4.34zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+        <!-- 3. Text Info and CTAs -->
+        <div class="hero-info">
+          <h1 class="hero-title" id="hero-title">
+            <span class="med">Med</span><span class="karma">Karma</span>
+          </h1>
+          <p class="hero-tagline">Your Ultimate Study Companion 🚀</p>
+          <p class="hero-sub">JEE &nbsp;•&nbsp; NEET &nbsp;•&nbsp; West Bengal Board</p>
+
+          <div class="hero-cta">
+            <a href="https://t.me/themedkarma" class="btn-primary" target="_blank" rel="noopener noreferrer" id="hero-join-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M22.265 2.428a2.048 2.048 0 0 0-2.078-.324L2.266 9.339a2.043 2.043 0 0 0 .104 3.818l4.3 1.393 1.765 5.581a.992.992 0 0 0 1.715.363l2.551-2.908 4.679 3.5a2.054 2.054 0 0 0 3.234-1.149l2.895-16.19a2.043 2.043 0 0 0-.244-1.319ZM10.4 14.93l-1.2 3.452-.987-3.486 9.172-7.624L10.4 14.93Z"/>
               </svg>
-            </span>
-            <span class="btn-apk-text">
-              <span class="btn-apk-label">Download MedKarma</span>
-              <span class="btn-apk-sub">Free Android App • APK</span>
-            </span>
-            <span class="btn-apk-arrow" aria-hidden="true">
-              <!-- Download arrow -->
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/>
-              </svg>
-            </span>
-          </button>
+              Join Telegram Channel
+            </a>
+            <a href="#exams" class="btn-secondary" id="hero-explore-btn">
+              📚 Explore Materials
+            </a>
+
+            <!-- ─── APK DOWNLOAD BUTTON ─── -->
+            <button class="btn-apk" id="apk-download-btn" aria-label="Download MedKarma Android App">
+              <span class="btn-apk-badge">NEW</span>
+              <span class="btn-apk-icon" aria-hidden="true">
+                <!-- Android robot icon -->
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                  <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zm-2.5-1C2.67 17 2 17.67 2 18.5v-9C2 8.67 2.67 8 3.5 8S5 8.67 5 9.5v9C5 19.33 4.33 20 3.5 20zM20.5 8C19.67 8 19 8.67 19 9.5v9c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5zM15.53 2.16l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48A5.84 5.84 0 0 0 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C7.03 3.07 6 4.65 6 6.5c0 .17.02.33.03.5h11.94c.01-.17.03-.33.03-.5 0-1.85-1.03-3.43-2.47-4.34zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+                </svg>
+              </span>
+              <span class="btn-apk-text">
+                <span class="btn-apk-label">Download MedKarma</span>
+                <span class="btn-apk-sub">Free Android App • APK</span>
+              </span>
+              <span class="btn-apk-arrow" aria-hidden="true">
+                <!-- Download arrow -->
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/>
+                </svg>
+              </span>
+            </button>
+
+            <!-- ─── CHEMISTRY APK DOWNLOAD BUTTON ─── -->
+            <button class="btn-apk" id="apk-chem-btn" aria-label="Download Chemistry Visualized Companion App">
+              <span class="btn-apk-badge" style="background: linear-gradient(135deg, var(--accent-cyan), var(--primary));">3D APP</span>
+              <span class="btn-apk-icon" style="background: linear-gradient(135deg, var(--accent-cyan), #0284c7);" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                  <path d="M19.5 13.5v-3.75L12 3 4.5 9.75v3.75l7.5 6.75 7.5-6.75ZM6 10.5l6-5.4 6 5.4v2.7l-6 5.4-6-5.4v-2.7Z"/>
+                </svg>
+              </span>
+              <span class="btn-apk-text">
+                <span class="btn-apk-label">Chemistry Visualized</span>
+                <span class="btn-apk-sub">Companion App • 3D APK</span>
+              </span>
+              <span class="btn-apk-arrow" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z"/>
+                </svg>
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -334,6 +360,66 @@
                 <span class="feature-icon" style="font-size:1.4rem;margin-bottom:6px">🎯</span>
                 <div class="feature-text">Weekly free mock tests with detailed solutions.</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── 3D STUDY LAB SECTION ─── -->
+      <section class="section reveal" id="3d-lab" aria-labelledby="lab-title">
+        <div class="section-header">
+          <div class="section-tag">🔬 Interactive 3D Lab</div>
+          <h2 class="section-title" id="lab-title">
+            Visualize to <span class="highlight">Learn</span>
+          </h2>
+          <p class="section-desc">Interact with dynamic, real-time 3D models to master complex JEE and NEET concepts</p>
+        </div>
+
+        <div class="lab-container">
+          <div class="lab-switcher" role="tablist" aria-label="Select 3D Model">
+            <button class="lab-btn active" data-model="dna" role="tab" aria-selected="true" id="btn-3d-dna">
+              🧬 Biology (DNA Helix)
+            </button>
+            <button class="lab-btn" data-model="chem" role="tab" aria-selected="false" id="btn-3d-chem">
+              🧪 Chemistry (Buckyball)
+            </button>
+            <button class="lab-btn" data-model="phys" role="tab" aria-selected="false" id="btn-3d-phys">
+              ⚛️ Physics (Atom Orbit)
+            </button>
+          </div>
+
+          <div class="canvas-wrapper">
+            <div id="3d-canvas-container"></div>
+            <div class="canvas-hint">Drag to rotate • Scroll to zoom</div>
+          </div>
+
+          <div class="model-info-panel">
+            <div class="info-content active" id="info-dna">
+              <h3>DNA Double Helix (NEET Biology)</h3>
+              <p>Deoxyribonucleic acid is a molecule composed of two chains that coil around each other to form a double helix. It carries the genetic instructions for development, functioning, growth, and reproduction of all organisms.</p>
+              <ul class="info-details">
+                <li><strong>Structure:</strong> Antiparallel helical strands of nucleotide units</li>
+                <li><strong>Base Pairs:</strong> Adenine-Thymine (A-T), Cytosine-Guanine (C-G)</li>
+                <li><strong>Significance:</strong> Key building block of life, highly emphasized in genetics</li>
+              </ul>
+            </div>
+            <div class="info-content" id="info-chem">
+              <h3>Carbon-60 Fullerene / Buckyball (JEE Chemistry)</h3>
+              <p>Buckminsterfullerene is a spherical fullerene molecule with the formula C60. It has a cage-like fused-ring structure resembling a soccer ball, made of twenty hexagons and twelve pentagons.</p>
+              <ul class="info-details">
+                <li><strong>Hybridization:</strong> sp² hybridized carbon atoms</li>
+                <li><strong>Symmetry:</strong> Truncated icosahedron (Icosahedral symmetry)</li>
+                <li><strong>Applications:</strong> Nanotechnology, drug delivery, superconductors</li>
+              </ul>
+            </div>
+            <div class="info-content" id="info-phys">
+              <h3>Atomic Orbitals / Particle Orbit (JEE Physics)</h3>
+              <p>A mathematical function that describes the wave-like behavior of an electron in an atom. This model visualizes the probability distribution of finding an electron in specific regions around the nucleus.</p>
+              <ul class="info-details">
+                <li><strong>Quantum Numbers:</strong> Principle (n), Angular (l), Magnetic (m)</li>
+                <li><strong>Duality:</strong> Demonstrates the wave-particle duality of electrons</li>
+                <li><strong>Key Focus:</strong> Modern Physics, Quantum Mechanics & Atomic Structure</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -579,6 +665,9 @@
     </svg>
   </a>
 
+  <!-- Three.js and OrbitControls CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="js/main.js" defer></script>
 </body>
 </html>
