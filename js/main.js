@@ -489,18 +489,55 @@ if (heroLogo) {
           }
         }
         
-        if (subLabel) subLabel.textContent = 'Starting download…';
-        showToast(`📥 Downloading ${cachedFile.name}…`, 'success');
+        if (subLabel) subLabel.textContent = 'Connecting to Drive…';
         
-        const url = `https://drive.google.com/uc?export=download&id=${cachedFile.id}`;
+        const driveApiKey = getApiKey();
+        const url = `https://www.googleapis.com/drive/v3/files/${cachedFile.id}?alt=media&key=${driveApiKey}`;
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file content (HTTP ${response.status})`);
+        }
+        
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        
+        let loaded = 0;
+        const reader = response.body.getReader();
+        const chunks = [];
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          chunks.push(value);
+          loaded += value.length;
+          
+          if (total > 0) {
+            const percent = Math.round((loaded / total) * 100);
+            if (subLabel) subLabel.textContent = `Downloading (${percent}%)…`;
+          } else {
+            const kbLoaded = Math.round(loaded / 1024);
+            if (subLabel) subLabel.textContent = `Downloading (${kbLoaded} KB)…`;
+          }
+        }
+        
+        if (subLabel) subLabel.textContent = 'Saving file…';
+        showToast(`📥 Saving ${cachedFile.name}…`, 'success');
+        
+        const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' });
+        const blobUrl = URL.createObjectURL(blob);
+        
         const a = document.createElement('a');
-        a.href = url;
+        a.href = blobUrl;
         a.download = cachedFile.name;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => a.remove(), 1000);
+        
+        setTimeout(() => {
+          a.remove();
+          URL.revokeObjectURL(blobUrl);
+        }, 1000);
         
       } catch (err) {
         console.error(`[APK Download - ${folderName}]`, err);
