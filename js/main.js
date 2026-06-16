@@ -772,7 +772,8 @@ if (heroLogo) {
   initScene();
 })();
 
-console.log('%c🎓 MedKarma', 'font-size:24px;font-weight:900;color:#a855f7;');
+// ─── INITIALIZE INFO LOGS ───
+console.log('%c🎓 Medkarma', 'font-size:24px;font-weight:900;color:#a855f7;');
 console.log('%cOwner: Sagir | Admin: Shuvajit', 'font-size:12px;color:#94a3b8;');
 console.log('%cJoin us: https://t.me/themedkarma', 'font-size:12px;color:#06b6d4;');
 
