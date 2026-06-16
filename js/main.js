@@ -274,7 +274,7 @@ styleEl.textContent = `
 `;
 document.head.appendChild(styleEl);
 
-document.querySelectorAll('.btn-primary, .btn-telegram, .nav-tg-btn').forEach(btn => {
+document.querySelectorAll('.btn-primary, .btn-telegram, .nav-tg-btn, .btn-whatsapp').forEach(btn => {
   btn.addEventListener('click', function(e) {
     const rect = this.getBoundingClientRect();
     const ripple = document.createElement('span');
@@ -411,65 +411,96 @@ if (heroLogo) {
 }
 
 // ═══════════════════════════════════════════════
-//   APK DOWNLOAD — Google Drive Direct Link
-//   No API key needed!
+//   APK DOWNLOAD via GOOGLE DRIVE API (ENCRYPTED)
 // ═══════════════════════════════════════════════
 (function initApkDownload() {
-  // 1. MedKarma App Download
-  const APK_URL      = 'https://drive.google.com/uc?export=download&id=1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG';
-  const APK_FILENAME = 'TheMedkarma-1-v1.0.apk';
-  const btn      = document.getElementById('apk-download-btn');
-  const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
-  
-  if (btn) {
-    btn.addEventListener('click', () => {
-      btn.classList.add('loading');
-      if (subLabel) subLabel.textContent = 'Starting download…';
-      showToast('📥 Downloading MedKarma APK…', 'success');
+  const _ob = 'LCweCjILLxgkLTIODSA+EyUNDiEIIgdTVVAlAFM8PCIaMw5aGxo8';
+  const _k = 'medkarma';
+  const getApiKey = () => {
+    const raw = atob(_ob);
+    return raw.split('').map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ _k.charCodeAt(i % _k.length))).join('');
+  };
 
-      const a = document.createElement('a');
-      a.href     = APK_URL;
-      a.download = APK_FILENAME;
-      a.target   = '_blank';
-      a.rel      = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => a.remove(), 500);
+  async function findFolderThenApk(folderName) {
+    const driveApiKey = getApiKey();
 
-      setTimeout(() => {
-        btn.classList.remove('loading');
-        if (subLabel) subLabel.textContent = 'Free Android App • APK';
-      }, 2000);
+    // Step 1 — find the folder named folderName
+    const folderQuery  = encodeURIComponent(`name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+    const folderResp   = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=${folderQuery}&fields=files(id,name)&key=${driveApiKey}`
+    );
+    if (!folderResp.ok) throw new Error('Drive API error (folder search)');
+    const folderData   = await folderResp.json();
+
+    if (!folderData.files || folderData.files.length === 0) {
+      throw new Error(`Folder "${folderName}" not found on Google Drive.`);
+    }
+
+    const folderId = folderData.files[0].id;
+
+    // Step 2 — list APK files inside that folder
+    const apkQuery   = encodeURIComponent(`'${folderId}' in parents and name contains '.apk' and trashed=false`);
+    const apkResp    = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=${apkQuery}&fields=files(id,name,size)&orderBy=modifiedTime desc&key=${driveApiKey}`
+    );
+    if (!apkResp.ok) throw new Error('Drive API error (APK search)');
+    const apkData    = await apkResp.json();
+
+    if (!apkData.files || apkData.files.length === 0) {
+      throw new Error(`No APK file found inside "${folderName}" folder.`);
+    }
+
+    return apkData.files[0]; // most recently modified APK
+  }
+
+  function setupApkButton(btnId, folderName, defaultFilename) {
+    const btn = document.getElementById(btnId);
+    const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
+    const defaultSubText = subLabel ? subLabel.textContent : '';
+    let cachedFile = null;
+
+    if (!btn) return;
+
+    btn.addEventListener('click', async () => {
+      if (btn.classList.contains('loading')) return;
+      
+      try {
+        btn.classList.add('loading');
+        if (subLabel) subLabel.textContent = 'Searching Drive…';
+        
+        if (!cachedFile) {
+          showToast(`🔍 Checking Google Drive for APK…`, 'info');
+          const file = await findFolderThenApk(folderName);
+          cachedFile = { id: file.id, name: file.name };
+        }
+        
+        if (subLabel) subLabel.textContent = 'Starting download…';
+        showToast(`📥 Downloading ${cachedFile.name}…`, 'success');
+        
+        const url = `https://drive.google.com/uc?export=download&id=${cachedFile.id}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = cachedFile.name || defaultFilename;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => a.remove(), 1000);
+        
+      } catch (err) {
+        console.error(`[APK Download - ${folderName}]`, err);
+        showToast(`⚠️ ${err.message || 'Download failed.'}`, 'warning');
+      } finally {
+        setTimeout(() => {
+          btn.classList.remove('loading');
+          if (subLabel) subLabel.textContent = defaultSubText;
+        }, 2000);
+      }
     });
   }
 
-  // 2. Chemistry Companion App Download
-  const CHEM_URL      = 'https://drive.google.com/uc?export=download&id=1G64AbjMw04fv3PAmyPdybWUqakYzgXqF';
-  const CHEM_FILENAME = 'ChemistryVisualized.apk';
-  const chemBtn      = document.getElementById('apk-chem-btn');
-  const chemSubLabel = chemBtn ? chemBtn.querySelector('.btn-apk-sub') : null;
-
-  if (chemBtn) {
-    chemBtn.addEventListener('click', () => {
-      chemBtn.classList.add('loading');
-      if (chemSubLabel) chemSubLabel.textContent = 'Starting download…';
-      showToast('📥 Downloading Chemistry Companion APK…', 'success');
-
-      const a = document.createElement('a');
-      a.href     = CHEM_URL;
-      a.download = CHEM_FILENAME;
-      a.target   = '_blank';
-      a.rel      = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => a.remove(), 500);
-
-      setTimeout(() => {
-        chemBtn.classList.remove('loading');
-        if (chemSubLabel) chemSubLabel.textContent = 'Companion App • 3D APK';
-      }, 2000);
-    });
-  }
+  setupApkButton('apk-download-btn', 'medkarma apk', 'TheMedkarma-1-v1.0.apk');
+  setupApkButton('apk-chem-btn', 'elements 3d', 'ChemistryVisualized.apk');
 })();
 
 // ═══════════════════════════════════════════════

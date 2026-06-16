@@ -1277,6 +1277,53 @@ body {
   width: 22px; height: 22px;
 }
 
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 28px;
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: var(--transition);
+  box-shadow: 0 6px 30px rgba(37, 211, 102, 0.4);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.btn-whatsapp::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 300%;
+  height: 300%;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  transition: transform 0.5s ease;
+}
+
+.btn-whatsapp:active::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.btn-whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(37, 211, 102, 0.6);
+}
+
+.btn-whatsapp svg {
+  width: 22px; height: 22px;
+}
+
 /* ─── ABOUT SECTION ─── */
 .about-card {
   background: var(--bg-card);
@@ -2109,7 +2156,8 @@ body {
   }
   
   .hero-cta .btn-primary,
-  .hero-cta .btn-secondary {
+  .hero-cta .btn-secondary,
+  .hero-cta .btn-whatsapp {
     flex: 1;
     min-width: 200px;
     justify-content: center;
