@@ -453,6 +453,11 @@ if (heroLogo) {
     return apkData.files[0]; // most recently modified APK
   }
 
+  const FALLBACK_IDS = {
+    'medkarma apk': '1GZmZoHO-douUueEWFCXd_7TFCVAJhpDG',
+    'elements 3d': '1G64AbjMw04fv3PAmyPdybWUqakYzgXqF'
+  };
+
   function setupApkButton(btnId, folderName, defaultFilename) {
     const btn = document.getElementById(btnId);
     const subLabel = btn ? btn.querySelector('.btn-apk-sub') : null;
@@ -469,9 +474,19 @@ if (heroLogo) {
         if (subLabel) subLabel.textContent = 'Searching Drive…';
         
         if (!cachedFile) {
-          showToast(`🔍 Checking Google Drive for APK…`, 'info');
-          const file = await findFolderThenApk(folderName);
-          cachedFile = { id: file.id, name: file.name };
+          try {
+            showToast(`🔍 Checking Google Drive for APK…`, 'info');
+            const file = await findFolderThenApk(folderName);
+            cachedFile = { id: file.id, name: file.name };
+          } catch (apiErr) {
+            console.warn(`[Drive API Fallback] Failed to fetch dynamically:`, apiErr);
+            const fallbackId = FALLBACK_IDS[folderName];
+            if (fallbackId) {
+              cachedFile = { id: fallbackId, name: defaultFilename };
+            } else {
+              throw apiErr;
+            }
+          }
         }
         
         if (subLabel) subLabel.textContent = 'Starting download…';
@@ -480,7 +495,7 @@ if (heroLogo) {
         const url = `https://drive.google.com/uc?export=download&id=${cachedFile.id}`;
         const a = document.createElement('a');
         a.href = url;
-        a.download = cachedFile.name || defaultFilename;
+        a.download = cachedFile.name;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         document.body.appendChild(a);
