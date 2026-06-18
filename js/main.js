@@ -37,9 +37,22 @@
       this.size = 1.5;
       this.arrived = false;
       this.ease = Math.random() * 0.05 + 0.03;
+
+      // Scattering properties
+      this.scattered = false;
+      this.vx = 0;
+      this.vy = 0;
+      this.alpha = 1;
     }
 
     update() {
+      if (this.scattered) {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.size *= 0.97;
+        this.alpha = Math.max(0, this.alpha - 0.02);
+        return;
+      }
       if (!this.arrived) {
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
@@ -58,7 +71,7 @@
     }
 
     draw() {
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = this.alpha;
       ctx.fillStyle = this.color;
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -102,14 +115,39 @@
     particles = [];
   }
 
+  function startScattering() {
+    particles.forEach(p => {
+      p.scattered = true;
+      const dx = p.x - width / 2;
+      const dy = p.y - height / 2;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const speed = Math.random() * 5 + 2.5; // Outward velocity magnitude
+      p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 1.5;
+      p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 1.5;
+    });
+  }
+
   function dismissSplash() {
     if (hasDismissed) return;
     hasDismissed = true;
-    splash.classList.add('hidden');
+
+    // Trigger magical dispersion of particles
+    startScattering();
+
+    // Dissolve background of splash screen
+    splash.classList.add('fade-bg');
+
+    // Add loaded class to body to trigger staggered hero entrance animations
+    document.body.classList.add('loaded');
+
+    // Wait for scattering particles to fade completely, then cleanup
     setTimeout(() => {
-      cancelAnimationFrame(animationFrameId);
-      splash.remove();
-    }, 600);
+      splash.classList.add('hidden');
+      setTimeout(() => {
+        cancelAnimationFrame(animationFrameId);
+        splash.remove();
+      }, 600);
+    }, 1200);
   }
 
   window.addEventListener('resize', () => {
@@ -121,8 +159,6 @@
   createTextPoints();
 
   function animate() {
-    if (hasDismissed) return;
-
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 0.3;
     ctx.fillStyle = '#0b0f19';
@@ -130,14 +166,16 @@
 
     ctx.globalCompositeOperation = 'lighter';
 
-    const pointsPerFrame = Math.floor(textPoints.length / 80) + 1;
-
-    for (let i = 0; i < pointsPerFrame; i++) {
-      if (currentIndex < textPoints.length) {
-        const pt = textPoints[currentIndex];
-        const pColor = `hsl(${(hue + currentIndex * 0.05) % 360}, 100%, 65%)`;
-        particles.push(new Particle(pt.x, pt.y, pColor));
-        currentIndex++;
+    // Only spawn new particles if splash dismissal has not started
+    if (!hasDismissed) {
+      const pointsPerFrame = Math.floor(textPoints.length / 80) + 1;
+      for (let i = 0; i < pointsPerFrame; i++) {
+        if (currentIndex < textPoints.length) {
+          const pt = textPoints[currentIndex];
+          const pColor = `hsl(${(hue + currentIndex * 0.05) % 360}, 100%, 65%)`;
+          particles.push(new Particle(pt.x, pt.y, pColor));
+          currentIndex++;
+        }
       }
     }
 
@@ -151,19 +189,18 @@
       }
     }
 
-    // Dismiss splash once page is loaded AND particles have arrived
-    if (currentIndex >= textPoints.length && allArrived && isPageLoaded) {
-      // Add a tiny delay for satisfaction before dismissing
+    // Trigger dismissal when particles have arrived and the window load event has fired
+    if (!hasDismissed && currentIndex >= textPoints.length && allArrived && isPageLoaded) {
       setTimeout(dismissSplash, 800);
     }
 
     animationFrameId = requestAnimationFrame(animate);
   }
 
-  // Set page loaded flag on window load
+  // Handle page loading
   window.addEventListener('load', () => {
     isPageLoaded = true;
-    // Failsafe timeout: if the page is loaded but animation isn't fully complete, dismiss after 3.5s max
+    // Failsafe timeout to ensure loading screen vanishes within a reasonable timeframe
     setTimeout(dismissSplash, 3500);
   });
 
