@@ -6,16 +6,169 @@
 
 'use strict';
 
-// ─── SPLASH SCREEN ───
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const splash = document.getElementById('splash');
-    if (splash) {
-      splash.classList.add('hidden');
-      setTimeout(() => splash.remove(), 600);
+// ─── SPLASH SCREEN & PARTICLE TEXT ANIMATION ───
+(function initSplashAnimation() {
+  const splash = document.getElementById('splash');
+  const canvas = document.getElementById('splash-canvas');
+  if (!canvas || !splash) return;
+  const ctx = canvas.getContext('2d');
+
+  let width, height;
+  let particles = [];
+  let textPoints = [];
+  let currentIndex = 0;
+  let animationFrameId = null;
+  let isPageLoaded = false;
+  let hasDismissed = false;
+  let hue = 180;
+
+  class Particle {
+    constructor(targetX, targetY, color) {
+      this.targetX = targetX;
+      this.targetY = targetY;
+
+      // Spawn particles far off-screen in a wide circle
+      const angle = Math.random() * Math.PI * 2;
+      const radius = Math.max(width, height) * 1.5;
+      this.x = width / 2 + Math.cos(angle) * radius;
+      this.y = height / 2 + Math.sin(angle) * radius;
+
+      this.color = color;
+      this.size = 1.5;
+      this.arrived = false;
+      this.ease = Math.random() * 0.05 + 0.03;
     }
-  }, 1800);
-});
+
+    update() {
+      if (!this.arrived) {
+        const dx = this.targetX - this.x;
+        const dy = this.targetY - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > 1) {
+          this.x += dx * this.ease;
+          this.y += dy * this.ease;
+        } else {
+          this.x = this.targetX;
+          this.y = this.targetY;
+          this.arrived = true;
+          this.size = 1.0;
+        }
+      }
+    }
+
+    draw() {
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function createTextPoints() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+    offCanvas.width = width;
+    offCanvas.height = height;
+
+    const fontSize = Math.min(width / 5, 140);
+    offCtx.font = `300 ${fontSize}px sans-serif`;
+    offCtx.fillStyle = 'white';
+    offCtx.textAlign = 'center';
+    offCtx.textBaseline = 'middle';
+    offCtx.fillText("Medkarma", width / 2, height / 2);
+
+    const data = offCtx.getImageData(0, 0, width, height).data;
+    textPoints = [];
+
+    const gap = 3;
+    for (let y = 0; y < height; y += gap) {
+      for (let x = 0; x < width; x += gap) {
+        const index = (y * width + x) * 4;
+        const alpha = data[index + 3];
+        if (alpha > 128) {
+          textPoints.push({ x: x, y: y });
+        }
+      }
+    }
+
+    textPoints.sort((a, b) => a.x - b.x);
+
+    currentIndex = 0;
+    particles = [];
+  }
+
+  function dismissSplash() {
+    if (hasDismissed) return;
+    hasDismissed = true;
+    splash.classList.add('hidden');
+    setTimeout(() => {
+      cancelAnimationFrame(animationFrameId);
+      splash.remove();
+    }, 600);
+  }
+
+  window.addEventListener('resize', () => {
+    if (!hasDismissed) {
+      createTextPoints();
+    }
+  });
+
+  createTextPoints();
+
+  function animate() {
+    if (hasDismissed) return;
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#0b0f19';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    const pointsPerFrame = Math.floor(textPoints.length / 80) + 1;
+
+    for (let i = 0; i < pointsPerFrame; i++) {
+      if (currentIndex < textPoints.length) {
+        const pt = textPoints[currentIndex];
+        const pColor = `hsl(${(hue + currentIndex * 0.05) % 360}, 100%, 65%)`;
+        particles.push(new Particle(pt.x, pt.y, pColor));
+        currentIndex++;
+      }
+    }
+
+    let allArrived = true;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.update();
+      p.draw();
+      if (!p.arrived) {
+        allArrived = false;
+      }
+    }
+
+    // Dismiss splash once page is loaded AND particles have arrived
+    if (currentIndex >= textPoints.length && allArrived && isPageLoaded) {
+      // Add a tiny delay for satisfaction before dismissing
+      setTimeout(dismissSplash, 800);
+    }
+
+    animationFrameId = requestAnimationFrame(animate);
+  }
+
+  // Set page loaded flag on window load
+  window.addEventListener('load', () => {
+    isPageLoaded = true;
+    // Failsafe timeout: if the page is loaded but animation isn't fully complete, dismiss after 3.5s max
+    setTimeout(dismissSplash, 3500);
+  });
+
+  animate();
+})();
 
 // ─── UPDATE YEAR IN FOOTER ───
 const yearEl = document.getElementById('year');

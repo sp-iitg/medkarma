@@ -1637,13 +1637,10 @@ body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: var(--bg-dark);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  background: #0b0f19;
+  display: block;
+  overflow: hidden;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .splash.hidden {
@@ -1651,46 +1648,13 @@ body {
   visibility: hidden;
 }
 
-.splash-logo {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  animation: splashSpin 1s ease-in-out both;
-  box-shadow: 0 0 40px rgba(124, 58, 237, 0.7);
-}
-
-@keyframes splashSpin {
-  from { opacity: 0; transform: scale(0.5) rotate(-180deg); }
-  to { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-
-.splash-text {
-  font-size: 2rem;
-  font-weight: 900;
-}
-
-.splash-text .med { color: var(--accent-cyan); }
-.splash-text .karma { color: var(--accent-pink); }
-
-.splash-loader {
-  width: 120px;
-  height: 3px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 50px;
-  overflow: hidden;
-}
-
-.splash-loader-bar {
+#splash-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-cyan), var(--primary), var(--accent-pink));
-  border-radius: 50px;
-  animation: loaderFill 1.5s ease forwards;
-}
-
-@keyframes loaderFill {
-  from { width: 0; }
-  to { width: 100%; }
+  display: block;
 }
 
 /* ─── RESPONSIVE TWEAKS ─── */
