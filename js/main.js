@@ -1,12 +1,24 @@
 /* ============================================
-   MEDKARMA - Main JavaScript
-   3D Animations | Gyroscope | Canvas Particles
-   Mobile-First | Touch Optimized
+   MEDKARMA - Feature Detected Overhauled JavaScript
+   GSAP & ScrollTrigger | Lenis Smooth Scroll
+   Custom Cursor trailing | Magnetic Hover Physics
+   Interactive 3D Lab (Three.js) & Particle BG
    ============================================ */
 
 'use strict';
 
-// ─── SPLASH SCREEN & PARTICLE TEXT ANIMATION ───
+// ─── STRICT FEATURE DETECTION ───
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+const isDesktop = isFinePointer && !isTouchDevice;
+
+if (isDesktop) {
+  document.body.classList.add('is-desktop');
+} else {
+  document.body.classList.add('is-mobile');
+}
+
+// ─── SPLASH SCREEN & PARTICLE TEXT ANIMATION (Original loading screen) ───
 (function initSplashAnimation() {
   const splash = document.getElementById('splash');
   const canvas = document.getElementById('splash-canvas');
@@ -140,6 +152,9 @@
     // Add loaded class to body to trigger staggered hero entrance animations
     document.body.classList.add('loaded');
 
+    // Trigger entrance animations
+    triggerEntranceAnimations();
+
     // Wait for scattering particles to fade completely, then cleanup
     setTimeout(() => {
       splash.classList.add('hidden');
@@ -161,7 +176,7 @@
   function animate() {
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 0.3;
-    ctx.fillStyle = '#0b0f19';
+    ctx.fillStyle = '#030308';
     ctx.fillRect(0, 0, width, height);
 
     ctx.globalCompositeOperation = 'lighter';
@@ -207,202 +222,455 @@
   animate();
 })();
 
-// ─── UPDATE YEAR IN FOOTER ───
-const yearEl = document.getElementById('year');
-if (yearEl) yearEl.textContent = new Date().getFullYear();
-
-// ═══════════════════════════════════════════════
-//   3D CANVAS PARTICLE SYSTEM
-// ═══════════════════════════════════════════════
-(function initParticleCanvas() {
-  const canvas = document.getElementById('particle-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const colors = [
-    'rgba(124,58,237,', 'rgba(168,85,247,', 'rgba(6,182,212,',
-    'rgba(236,72,153,', 'rgba(245,158,11,', 'rgba(16,185,129,',
-  ];
-  let W, H, particles;
-
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-
-  class Particle {
-    constructor() { this.reset(true); }
-    reset(init) {
-      this.x    = Math.random() * W;
-      this.y    = init ? Math.random() * H : H + 10;
-      this.z    = Math.random() * 0.8 + 0.2;
-      this.r    = (Math.random() * 2.5 + 1) * this.z;
-      this.vx   = (Math.random() - 0.5) * 0.4;
-      this.vy   = -(Math.random() * 0.6 + 0.2) * this.z;
-      this.col  = colors[Math.floor(Math.random() * colors.length)];
-      this.a    = 0;
-      this.aMax = Math.random() * 0.55 + 0.1;
-      this.life = 0;
-      this.maxL = Math.random() * 250 + 150;
-    }
-    update() {
-      this.life++;
-      const fadeT = 30;
-      if (this.life < fadeT) this.a = (this.life / fadeT) * this.aMax;
-      else if (this.life > this.maxL - fadeT) this.a = ((this.maxL - this.life) / fadeT) * this.aMax;
-      else this.a = this.aMax;
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.life >= this.maxL || this.y < -10) this.reset(false);
-    }
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = this.col + this.a.toFixed(2) + ')';
-      ctx.fill();
-    }
-  }
-
-  function init() {
-    resize();
-    const COUNT = Math.min(60, Math.floor((W * H) / 15000));
-    particles = Array.from({ length: COUNT }, () => new Particle());
-  }
-
-  function loop() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => { p.update(); p.draw(); });
-    requestAnimationFrame(loop);
-  }
-
-  window.addEventListener('resize', resize, { passive: true });
-  init();
-  loop();
-})();
-
-// ═══════════════════════════════════════════════
-//   GYROSCOPE TILT
-// ═══════════════════════════════════════════════
-(function initGyro() {
-  const root = document.documentElement;
-  function applyTilt(beta, gamma) {
-    const maxTilt = 12;
-    const rx = Math.max(-maxTilt, Math.min(maxTilt, beta  * 0.15));
-    const ry = Math.max(-maxTilt, Math.min(maxTilt, gamma * 0.15));
-    root.style.setProperty('--gyro-x', rx.toFixed(2) + 'deg');
-    root.style.setProperty('--gyro-y', ry.toFixed(2) + 'deg');
-  }
-  if (window.DeviceOrientationEvent) {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      document.body.addEventListener('touchend', async function unlock() {
-        try {
-          const perm = await DeviceOrientationEvent.requestPermission();
-          if (perm === 'granted') {
-            window.addEventListener('deviceorientation', e => applyTilt(e.beta, e.gamma), { passive: true });
-          }
-        } catch (_) {}
-        document.body.removeEventListener('touchend', unlock);
-      }, { once: true });
-    } else {
-      window.addEventListener('deviceorientation', e => applyTilt(e.beta, e.gamma), { passive: true });
-    }
-  }
-})();
-
-// ═══════════════════════════════════════════════
-//   SCROLL-DRIVEN PARALLAX ORBS
-// ═══════════════════════════════════════════════
-(function initParallax() {
-  const orbA = document.querySelector('.parallax-orb-a');
-  const orbB = document.querySelector('.parallax-orb-b');
-  let ticking = false;
-  function onScroll() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(() => {
-      const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight);
-      if (orbA) orbA.style.transform = `translateY(${pct * -120}px) translateZ(0)`;
-      if (orbB) orbB.style.transform = `translateY(${pct *  90}px) translateZ(0)`;
-      ticking = false;
-    });
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-})();
-
-// ═══════════════════════════════════════════════
-//   TOUCH GLOW BURST
-// ═══════════════════════════════════════════════
-document.addEventListener('touchstart', (e) => {
-  const t = e.touches[0];
-  const glow = document.createElement('div');
-  glow.className = 'touch-glow';
-  glow.style.left = t.clientX + 'px';
-  glow.style.top  = t.clientY + 'px';
-  document.body.appendChild(glow);
-  setTimeout(() => glow.remove(), 700);
-}, { passive: true });
-
-// ═══════════════════════════════════════════════
-//   3D TILT ON EXAM CARDS (touch + mouse)
-// ═══════════════════════════════════════════════
-document.querySelectorAll('.exam-card').forEach(card => {
-  card.addEventListener('mousemove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width  - 0.5;
-    const y = (e.clientY - rect.top)  / rect.height - 0.5;
-    card.style.transform = `translateY(-4px) rotateX(${-y * 8}deg) rotateY(${x * 8}deg) scale(1.02)`;
+// ─── LENIS SMOOTH SCROLLER (Desktop Only) ───
+let lenis;
+if (isDesktop) {
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    direction: 'vertical',
+    gestureDirection: 'vertical',
+    smooth: true,
+    mouseMultiplier: 1,
+    smoothTouch: false,
+    touchMultiplier: 2,
+    infinite: false,
   });
-  card.addEventListener('mouseleave', () => { card.style.transform = ''; });
-  card.addEventListener('touchmove', (e) => {
-    const t = e.touches[0];
-    const rect = card.getBoundingClientRect();
-    const x = (t.clientX - rect.left) / rect.width  - 0.5;
-    const y = (t.clientY - rect.top)  / rect.height - 0.5;
-    card.style.transform = `rotateX(${-y * 6}deg) rotateY(${x * 6}deg) scale(1.015)`;
-    card.style.transition = 'none';
-  }, { passive: true });
-  card.addEventListener('touchend', () => {
-    card.style.transform = '';
-    card.style.transition = '';
-  }, { passive: true });
-});
 
-// ═══════════════════════════════════════════════
-//   3D FLIP CARDS ON TAP (feature cards)
-// ═══════════════════════════════════════════════
+  const raf = (time) => {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  };
+  requestAnimationFrame(raf);
+
+  // Bind ScrollTrigger to update on scroll
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+  gsap.ticker.lagSmoothing(0);
+}
+
+// ─── HERO & INITIAL PAGE ENTRANCE ANIMATIONS (Staggered GSAP) ───
+function triggerEntranceAnimations() {
+  const tl = gsap.timeline();
+  
+  tl.fromTo('.navbar', {
+    y: -30,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.8,
+    ease: 'power3.out'
+  });
+
+  tl.fromTo('.hero-badge', {
+    scale: 0.8,
+    opacity: 0,
+    y: 10
+  }, {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    duration: 0.6,
+    ease: 'back.out(1.7)'
+  }, '-=0.4');
+
+  tl.fromTo('.hero-title .med', {
+    y: 40,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.6,
+    ease: 'power3.out'
+  }, '-=0.3');
+
+  tl.fromTo('.hero-title .karma', {
+    y: 40,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.6,
+    ease: 'power3.out'
+  }, '-=0.5');
+
+  tl.fromTo('.hero-tagline', {
+    y: 20,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, '-=0.3');
+
+  tl.fromTo('.hero-sub', {
+    y: 20,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, '-=0.4');
+
+  tl.fromTo('.hero-cta .cta-row > *', {
+    y: 20,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.6,
+    stagger: 0.12,
+    ease: 'power2.out'
+  }, '-=0.4');
+
+  tl.fromTo('.hero-cta .btn-whatsapp, .hero-cta .btn-apk', {
+    y: 20,
+    opacity: 0
+  }, {
+    y: 0,
+    opacity: 1,
+    duration: 0.6,
+    stagger: 0.1,
+    ease: 'power2.out'
+  }, '-=0.4');
+
+  tl.fromTo('.hero-logo-wrap', {
+    scale: 0.6,
+    opacity: 0,
+    rotation: -10
+  }, {
+    scale: 1,
+    opacity: 1,
+    rotation: 0,
+    duration: 1.2,
+    ease: 'back.out(1.2)'
+  }, '-=1.2');
+
+  // Initialize ScrollTrigger reveals ONLY on Desktop to maintain lightweight mobile speeds
+  if (isDesktop) {
+    initScrollTriggerReveals();
+  }
+}
+
+// ─── SCROLLTRIGGER REVEALS (Desktop Only) ───
+function initScrollTriggerReveals() {
+  // Reveal individual elements
+  document.querySelectorAll('.reveal').forEach((el) => {
+    gsap.fromTo(el, 
+      { opacity: 0, y: 40 },
+      { 
+        opacity: 1, 
+        y: 0, 
+        duration: 0.8, 
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 85%',
+          toggleActions: 'play none none none'
+        }
+      }
+    );
+  });
+
+  // Stagger reveal grid columns
+  const grids = [
+    { container: '.stats-bar', items: '.stat-item' },
+    { container: '.exam-grid', items: '.exam-card' },
+    { container: '.features-grid', items: '.feature-card' },
+    { container: '.materials-grid', items: '.material-item' },
+    { container: '.team-grid', items: '.team-card' }
+  ];
+
+  grids.forEach((grid) => {
+    const parent = document.querySelector(grid.container);
+    if (!parent) return;
+
+    gsap.fromTo(parent.querySelectorAll(grid.items), 
+      { opacity: 0, y: 35 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: parent,
+          start: 'top 82%'
+        }
+      }
+    );
+  });
+}
+
+// ─── CUSTOM CURSOR SYSTEM (Desktop Only) ───
+if (isDesktop) {
+  (function initCustomCursor() {
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    if (!dot || !ring) return;
+
+    let mX = 0, mY = 0; // Raw coordinates
+    let rX = 0, rY = 0; // Interpolated coordinates
+
+    window.addEventListener('mousemove', (e) => {
+      mX = e.clientX;
+      mY = e.clientY;
+      
+      dot.style.left = `${mX}px`;
+      dot.style.top = `${mY}px`;
+    });
+
+    const drawRing = () => {
+      const lerpSpeed = 0.12;
+      rX += (mX - rX) * lerpSpeed;
+      rY += (mY - rY) * lerpSpeed;
+
+      ring.style.left = `${rX}px`;
+      ring.style.top = `${rY}px`;
+
+      requestAnimationFrame(drawRing);
+    };
+    drawRing();
+
+    // Hover modifiers
+    const body = document.body;
+    const hoverSelectors = 'a, button, .subject-chip, .exam-card, .material-item, .feature-card, .lab-btn';
+    
+    document.querySelectorAll(hoverSelectors).forEach((item) => {
+      item.addEventListener('mouseenter', () => {
+        body.classList.add('cursor-hover');
+        if (item.classList.contains('btn-primary') || item.classList.contains('btn-telegram') || item.classList.contains('btn-whatsapp') || item.classList.contains('nav-logo')) {
+          body.classList.add('cursor-difference');
+        }
+      });
+
+      item.addEventListener('mouseleave', () => {
+        body.classList.remove('cursor-hover');
+        body.classList.remove('cursor-difference');
+      });
+    });
+
+    document.addEventListener('mouseleave', () => {
+      dot.style.opacity = 0;
+      ring.style.opacity = 0;
+    });
+
+    document.addEventListener('mouseenter', () => {
+      dot.style.opacity = 1;
+      ring.style.opacity = 1;
+    });
+  })();
+}
+
+// ─── MAGNETIC BUTTON PHYSICS (Desktop Only) ───
+if (isDesktop) {
+  (function initMagneticElements() {
+    const magneticItems = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-telegram, .btn-whatsapp, .nav-tg-btn, .nav-logo, .social-btn');
+    
+    magneticItems.forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const elX = rect.left + rect.width / 2;
+        const elY = rect.top + rect.height / 2;
+        
+        const x = e.clientX - elX;
+        const y = e.clientY - elY;
+        
+        gsap.to(el, {
+          x: x * 0.35,
+          y: y * 0.35,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+
+      el.addEventListener('mouseleave', () => {
+        gsap.to(el, {
+          x: 0,
+          y: 0,
+          duration: 0.6,
+          ease: 'elastic.out(1, 0.3)'
+        });
+      });
+    });
+  })();
+}
+
+// ─── INTERACTIVE BACKGROUND CONSTELLATION (Desktop Only) ───
+if (isDesktop) {
+  (function initInteractiveBackground() {
+    const canvas = document.getElementById('particle-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let W, H;
+    let particles = [];
+    let mouse = { x: null, y: null, radius: 140 };
+
+    const resize = () => {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    };
+    resize();
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseleave', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+        this.baseX = this.x;
+        this.baseY = this.y;
+        this.size = Math.random() * 2 + 1;
+        this.density = (Math.random() * 30) + 12;
+        this.color = 'rgba(0, 242, 254, 0.4)';
+      }
+
+      update() {
+        if (mouse.x !== null && mouse.y !== null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < mouse.radius) {
+            let forceDirectionX = dx / distance;
+            let forceDirectionY = dy / distance;
+            
+            let maxDistance = mouse.radius;
+            let force = (maxDistance - distance) / maxDistance;
+            let directionX = forceDirectionX * force * this.density;
+            let directionY = forceDirectionY * force * this.density;
+            
+            this.x -= directionX;
+            this.y -= directionY;
+          } else {
+            if (this.x !== this.baseX) {
+              let dx = this.x - this.baseX;
+              this.x -= dx / 15;
+            }
+            if (this.y !== this.baseY) {
+              let dy = this.y - this.baseY;
+              this.y -= dy / 15;
+            }
+          }
+        } else {
+          if (this.x !== this.baseX) {
+            let dx = this.x - this.baseX;
+            this.x -= dx / 15;
+          }
+          if (this.y !== this.baseY) {
+            let dy = this.y - this.baseY;
+            this.y -= dy / 15;
+          }
+        }
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    const init = () => {
+      particles = [];
+      let particleCount = Math.min(75, Math.floor((W * H) / 18000));
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+    };
+    init();
+
+    const animate = () => {
+      ctx.clearRect(0, 0, W, H);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      
+      for (let a = 0; a < particles.length; a++) {
+        for (let b = a; b < particles.length; b++) {
+          let dx = particles[a].x - particles[b].x;
+          let dy = particles[a].y - particles[b].y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < 110) {
+            let alpha = (1 - (dist / 110)) * 0.12;
+            ctx.strokeStyle = `rgba(0, 242, 254, ${alpha})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(particles[a].x, particles[a].y);
+            ctx.lineTo(particles[b].x, particles[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(animate);
+    };
+    animate();
+    
+    window.addEventListener('resize', init);
+  })();
+}
+
+// ─── 3D GYROSCOPE/TILT HOVERS (Desktop Only) ───
+if (isDesktop) {
+  (function initTiltEffects() {
+    document.querySelectorAll('.exam-card, .team-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width - 0.5;
+        const y = (e.clientY - rect.top) / rect.height - 0.5;
+        card.style.transform = `translateY(-5px) rotateX(${-y * 12}deg) rotateY(${x * 12}deg) scale(1.02)`;
+        card.style.boxShadow = `0 15px 35px rgba(0, 0, 0, 0.4), 0 0 25px ${card.dataset.glow || 'rgba(0, 242, 254, 0.1)'}`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = '';
+        card.style.boxShadow = '';
+      });
+    });
+  })();
+}
+
+// ─── 3D FLIP CARDS ON CLICK ───
 document.querySelectorAll('.feature-card').forEach(card => {
   card.addEventListener('click', () => {
     card.classList.toggle('flipped');
     if (card.classList.contains('flipped')) {
-      setTimeout(() => card.classList.remove('flipped'), 2500);
+      setTimeout(() => card.classList.remove('flipped'), 3000);
     }
   });
 });
 
-// ═══════════════════════════════════════════════
-//   NAVBAR SCROLL EFFECT
-// ═══════════════════════════════════════════════
+// ─── NAVBAR DYNAMIC TRANSPARENCY ───
 const navbar = document.querySelector('.navbar');
-window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 60);
-}, { passive: true });
-
-// ═══════════════════════════════════════════════
-//   SCROLL REVEAL
-// ═══════════════════════════════════════════════
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
-    if (entry.isIntersecting) {
-      setTimeout(() => entry.target.classList.add('visible'), i * 80);
-      revealObserver.unobserve(entry.target);
+if (navbar) {
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 40) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
     }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  }, { passive: true });
+}
 
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => revealObserver.observe(el));
-
-// ═══════════════════════════════════════════════
-//   SUBJECT CHIPS FILTER
-// ═══════════════════════════════════════════════
+// ─── SUBJECT CHIPS FILTERING ───
 const chips = document.querySelectorAll('.subject-chip');
 const materialItems = document.querySelectorAll('.material-item');
 
@@ -410,13 +678,15 @@ chips.forEach(chip => {
   chip.addEventListener('click', () => {
     chips.forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
-    chip.style.transform = 'scale(1.1)';
-    setTimeout(() => chip.style.transform = '', 200);
+
+    // Tiny micro-animation click visual
+    gsap.to(chip, { scale: 1.05, duration: 0.1, yoyo: true, repeat: 1 });
+
     const filter = chip.dataset.filter;
     materialItems.forEach(item => {
       if (filter === 'all' || item.dataset.subject === filter) {
         item.style.display = 'flex';
-        item.style.animation = 'fadeInUp 0.4s ease forwards';
+        gsap.fromTo(item, { opacity: 0, scale: 0.95, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power2.out' });
       } else {
         item.style.display = 'none';
       }
@@ -424,546 +694,688 @@ chips.forEach(chip => {
   });
 });
 
-// ═══════════════════════════════════════════════
-//   COUNTER ANIMATION
-// ═══════════════════════════════════════════════
+// ─── COUNTER STATS ANIMATION (GSAP) ───
 function animateCounter(el) {
   const target = parseInt(el.dataset.target);
   const suffix = el.dataset.suffix || '';
-  const duration = 1600;
-  const start = performance.now();
-  function update(now) {
-    const elapsed = now - start;
-    const progress = Math.min(elapsed / duration, 1);
-    const eased = 1 - Math.pow(1 - progress, 4);
-    el.textContent = Math.floor(eased * target).toLocaleString('en-IN') + suffix;
-    if (progress < 1) requestAnimationFrame(update);
-    else el.textContent = target.toLocaleString('en-IN') + suffix;
-  }
-  requestAnimationFrame(update);
-}
+  const obj = { count: 0 };
 
-const counterObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      animateCounter(entry.target);
-      counterObserver.unobserve(entry.target);
+  gsap.to(obj, {
+    count: target,
+    duration: 2.2,
+    ease: 'power3.out',
+    onUpdate: () => {
+      el.textContent = Math.floor(obj.count).toLocaleString('en-IN') + suffix;
     }
   });
-}, { threshold: 0.5 });
+}
 
-document.querySelectorAll('.stat-num[data-target]').forEach(el => counterObserver.observe(el));
+// IntersectionTrigger to trigger counters
+const statsSection = document.querySelector('.stats-bar');
+if (statsSection) {
+  ScrollTrigger.create({
+    trigger: statsSection,
+    start: 'top 85%',
+    onEnter: () => {
+      document.querySelectorAll('.stat-num').forEach(el => animateCounter(el));
+    },
+    once: true
+  });
+}
 
-// ═══════════════════════════════════════════════
-//   RIPPLE + ANIMATION KEYFRAMES
-// ═══════════════════════════════════════════════
-const styleEl = document.createElement('style');
-styleEl.textContent = `
-  @keyframes rippleAnim { to { transform: scale(1); opacity: 0; } }
-  @keyframes fadeInUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
-`;
-document.head.appendChild(styleEl);
+// ─── TOAST NOTIFICATION ───
+const toast = document.createElement('div');
+toast.className = 'toast-notice';
+document.body.appendChild(toast);
 
-document.querySelectorAll('.btn-primary, .btn-telegram, .nav-tg-btn, .btn-whatsapp').forEach(btn => {
-  btn.addEventListener('click', function(e) {
-    const rect = this.getBoundingClientRect();
-    const ripple = document.createElement('span');
-    const size = Math.max(rect.width, rect.height) * 2;
-    const cx = (e.clientX || rect.left + rect.width  / 2) - rect.left - size / 2;
-    const cy = (e.clientY || rect.top  + rect.height / 2) - rect.top  - size / 2;
-    ripple.style.cssText = `
-      position:absolute; border-radius:50%;
-      background:rgba(255,255,255,0.25);
-      width:${size}px; height:${size}px;
-      left:${cx}px; top:${cy}px;
-      transform:scale(0);
-      animation:rippleAnim 0.6s ease forwards;
-      pointer-events:none;
-    `;
-    this.style.position = 'relative';
-    this.style.overflow = 'hidden';
-    this.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
+function showToast(message, isSuccess = false) {
+  toast.textContent = message;
+  toast.className = 'toast-notice' + (isSuccess ? ' success' : '') + ' show';
+  
+  gsap.fromTo(toast, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out' });
+
+  setTimeout(() => {
+    gsap.to(toast, {
+      y: 20,
+      opacity: 0,
+      duration: 0.4,
+      onComplete: () => {
+        toast.classList.remove('show');
+      }
+    });
+  }, 3000);
+}
+
+// Trigger Toast feedback
+document.querySelectorAll('.material-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const title = item.querySelector('.material-title')?.textContent || 'Material';
+    showToast(`📲 Heading to Telegram to download: ${title}`, true);
   });
 });
 
-// ═══════════════════════════════════════════════
-//   SMOOTH SCROLL
-// ═══════════════════════════════════════════════
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
-    e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+document.querySelectorAll('.exam-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const name = card.querySelector('.exam-name')?.textContent || 'Exam';
+    showToast(`📚 Loading resources for: ${name}`, true);
   });
 });
 
-// ═══════════════════════════════════════════════
-//   TICKER PAUSE
-// ═══════════════════════════════════════════════
+// ─── ANNOUNCEMENT TICKER PLAY/PAUSE ON HOVER ───
 const ticker = document.querySelector('.ticker-track');
 if (ticker) {
   ticker.addEventListener('mouseenter', () => ticker.style.animationPlayState = 'paused');
   ticker.addEventListener('mouseleave', () => ticker.style.animationPlayState = 'running');
-  ticker.addEventListener('touchstart', () => ticker.style.animationPlayState = 'paused', { passive: true });
-  ticker.addEventListener('touchend',   () => ticker.style.animationPlayState = 'running', { passive: true });
 }
 
-// ═══════════════════════════════════════════════
-//   SWIPE ON TESTIMONIALS
-// ═══════════════════════════════════════════════
-(function initSwipe() {
-  const scroll = document.querySelector('.testimonial-scroll');
-  if (!scroll) return;
-  let startX = 0;
-  scroll.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
-  scroll.addEventListener('touchend', e => {
-    const diff = startX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) scroll.scrollBy({ left: diff > 0 ? 280 : -280, behavior: 'smooth' });
-  }, { passive: true });
-})();
+// ─── SMOOTH SCROLL ANCHORS ───
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const targetId = this.getAttribute('href');
+    const targetEl = document.querySelector(targetId);
+    
+    if (targetEl) {
+      if (isDesktop && lenis) {
+        lenis.scrollTo(targetEl, {
+          offset: -40,
+          duration: 1.5,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
+        });
+      } else {
+        // Native scroll fallbacks for lightweight mobile experience
+        const offset = 40;
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = targetEl.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
 
-// ═══════════════════════════════════════════════
-//   TOAST NOTIFICATION
-// ═══════════════════════════════════════════════
-function showToast(msg, type = 'info') {
-  const toast = document.createElement('div');
-  const colors = { info: '#7c3aed', success: '#10b981', warning: '#f59e0b' };
-  toast.style.cssText = `
-    position:fixed; bottom:100px; left:50%;
-    transform:translateX(-50%) translateY(20px);
-    background:rgba(10,10,26,0.96);
-    border:1px solid ${colors[type]};
-    color:#f8fafc; padding:12px 20px;
-    border-radius:50px; font-size:0.82rem;
-    font-weight:600; font-family:'Outfit',sans-serif;
-    z-index:9999; backdrop-filter:blur(20px);
-    box-shadow:0 4px 24px rgba(0,0,0,0.5);
-    opacity:0; transition:all 0.3s ease; white-space:nowrap;
-  `;
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; }, 10);
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(20px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 2800);
-}
-
-// ─── MATERIAL ITEM CLICK ───
-document.querySelectorAll('.material-item').forEach(item => {
-  item.addEventListener('click', () => showToast('📲 Join our Telegram to download!', 'info'));
-});
-
-// ─── EXAM CARD CLICK ───
-document.querySelectorAll('.exam-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const name = card.querySelector('.exam-name')?.textContent || 'Exam';
-    showToast(`📚 ${name} materials on Telegram!`, 'success');
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
   });
 });
 
-// ─── CSS PARTICLES (fallback) ───
-(function createCSSParticles() {
-  const pColors = ['#7c3aed','#a855f7','#06b6d4','#ec4899','#f59e0b','#10b981'];
-  for (let i = 0; i < 12; i++) {
-    const p = document.createElement('div');
-    p.classList.add('particle');
-    const size = Math.random() * 5 + 2;
-    p.style.cssText = `
-      width:${size}px; height:${size}px;
-      background:${pColors[Math.floor(Math.random() * pColors.length)]};
-      left:${Math.random() * 100}%;
-      animation-duration:${Math.random() * 14 + 10}s;
-      animation-delay:${Math.random() * 8}s;
-      opacity:0;
-    `;
-    document.body.appendChild(p);
-  }
-})();
-
-// ─── HERO LOGO 3D HOVER (desktop) ───
-const heroLogo = document.querySelector('.hero-logo');
-if (heroLogo) {
-  const wrap = heroLogo.closest('.hero-logo-wrap');
-  if (wrap) {
-    wrap.addEventListener('mousemove', (e) => {
-      const rect = wrap.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width  - 0.5) * 20;
-      const y = ((e.clientY - rect.top)  / rect.height - 0.5) * 20;
-      heroLogo.style.transform = `rotateX(${-y}deg) rotateY(${x}deg) scale(1.06)`;
-    });
-    wrap.addEventListener('mouseleave', () => {
-      heroLogo.style.transform = 'rotateX(var(--gyro-x)) rotateY(var(--gyro-y))';
-    });
-  }
-}
-
-
-
-// ═══════════════════════════════════════════════
-//   INTERACTIVE 3D STUDY LAB (THREE.JS)
-// ═══════════════════════════════════════════════
+// ─── INTERACTIVE 3D STUDY LAB (THREE.JS VS MOBILE FALLBACKS) ───
 (function init3DLab() {
   const container = document.getElementById('3d-canvas-container');
   if (!container) return;
 
-  // Wait for THREE to load
-  if (typeof THREE === 'undefined') {
-    setTimeout(init3DLab, 100);
-    return;
-  }
-
-  let scene, camera, renderer, controls;
-  let currentModel = null;
-  let activeModelName = 'dna';
-  const models = {};
-
-  // Setup Scene, Camera, Renderer
-  function initScene() {
-    scene = new THREE.Scene();
-
-    const width = container.clientWidth || 320;
-    const height = container.clientHeight || 320;
-
-    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 16);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-
-    // Orbit Controls
-    if (typeof THREE.OrbitControls !== 'undefined') {
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-    } else if (typeof OrbitControls !== 'undefined') {
-      controls = new OrbitControls(camera, renderer.domElement);
-    } else {
-      controls = new window.OrbitControls(camera, renderer.domElement);
-    }
-    
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
-    controls.minDistance = 6;
-    controls.maxDistance = 22;
-    controls.enablePan = false;
-
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    const dirLight1 = new THREE.DirectionalLight(0x06b6d4, 1.5);
-    dirLight1.position.set(10, 10, 10);
-    scene.add(dirLight1);
-
-    const dirLight2 = new THREE.DirectionalLight(0xec4899, 1.2);
-    dirLight2.position.set(-10, -10, 10);
-    scene.add(dirLight2);
-
-    const pointLight = new THREE.PointLight(0xa855f7, 2.5, 30);
-    pointLight.position.set(0, 0, 0);
-    scene.add(pointLight);
-
-    // Build models
-    buildDNA();
-    buildChemistry();
-    buildPhysics();
-
-    // Set initial model
-    switchModel('dna');
-
-    // Start animation loop
-    animate();
-  }
-
-  // Model 1: DNA Double Helix
-  function buildDNA() {
-    const group = new THREE.Group();
-    const strandGeom = new THREE.SphereGeometry(0.22, 16, 16);
-    const cyanMat = new THREE.MeshPhongMaterial({ color: 0x06b6d4, emissive: 0x014c59, shininess: 30 });
-    const pinkMat = new THREE.MeshPhongMaterial({ color: 0xec4899, emissive: 0x611039, shininess: 30 });
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
-
-    const numPoints = 28;
-    const r = 2.6;
-    const height = 9;
-
-    for (let i = 0; i < numPoints; i++) {
-      const t = (i / numPoints) * Math.PI * 4;
-      const y = (i / numPoints) * height - height / 2;
-
-      // Strand A
-      const xA = r * Math.cos(t);
-      const zA = r * Math.sin(t);
-      const sphereA = new THREE.Mesh(strandGeom, cyanMat);
-      sphereA.position.set(xA, y, zA);
-      group.add(sphereA);
-
-      // Strand B
-      const xB = r * Math.cos(t + Math.PI);
-      const zB = r * Math.sin(t + Math.PI);
-      const sphereB = new THREE.Mesh(strandGeom, pinkMat);
-      sphereB.position.set(xB, y, zB);
-      group.add(sphereB);
-
-      // Connect rungs
-      const points = [];
-      points.push(new THREE.Vector3(xA, y, zA));
-      points.push(new THREE.Vector3(xB, y, zB));
-      
-      const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
-      const rung = new THREE.Line(lineGeom, lineMat);
-      group.add(rung);
-    }
-
-    models.dna = group;
-  }
-
-  // Model 2: Carbon Buckyball (C60 Fullerene representation)
-  function buildChemistry() {
-    const group = new THREE.Group();
-    
-    // We construct a molecular structure from an Icosahedron
-    const geom = new THREE.IcosahedronGeometry(3.0, 1);
-    
-    // Atom Sphere
-    const atomGeom = new THREE.SphereGeometry(0.18, 16, 16);
-    const atomMat = new THREE.MeshPhongMaterial({ color: 0xa855f7, emissive: 0x3c115c, shininess: 50 });
-
-    const pos = geom.attributes.position;
-    const vertices = [];
-    const threshold = 0.01;
-
-    // Filter unique vertices
-    for (let i = 0; i < pos.count; i++) {
-      const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
-      let isDuplicate = false;
-      for (const uniqueV of vertices) {
-        if (uniqueV.distanceTo(v) < threshold) {
-          isDuplicate = true;
-          break;
-        }
-      }
-      if (!isDuplicate) {
-        vertices.push(v);
-      }
-    }
-
-    // Add sphere atoms at vertices
-    vertices.forEach(v => {
-      const sphere = new THREE.Mesh(atomGeom, atomMat);
-      sphere.position.copy(v);
-      group.add(sphere);
-    });
-
-    // Create bonding links between near neighbors
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.5 });
-    for (let i = 0; i < vertices.length; i++) {
-      for (let j = i + 1; j < vertices.length; j++) {
-        const dist = vertices[i].distanceTo(vertices[j]);
-        // Buckyball adjacent vertices are around 1.5 to 2.2 units apart
-        if (dist > 1.2 && dist < 2.2) {
-          const points = [vertices[i], vertices[j]];
-          const lineGeom = new THREE.BufferGeometry().setFromPoints(points);
-          const bond = new THREE.Line(lineGeom, lineMat);
-          group.add(bond);
-        }
-      }
-    }
-
-    models.chem = group;
-  }
-
-  // Model 3: Atomic Orbitals (Physics)
-  function buildPhysics() {
-    const group = new THREE.Group();
-
-    // Central Nucleus
-    const nucleusGeom = new THREE.SphereGeometry(0.7, 32, 32);
-    const nucleusMat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0xa855f7, shininess: 100 });
-    const nucleus = new THREE.Mesh(nucleusGeom, nucleusMat);
-    group.add(nucleus);
-
-    // Orbit Ring paths
-    const numOrbits = 3;
-    const electronGeom = new THREE.SphereGeometry(0.16, 16, 16);
-    const electronMat = new THREE.MeshPhongMaterial({ color: 0x06b6d4, emissive: 0x00363f, shininess: 80 });
-
-    const orbitGroups = [];
-
-    for (let i = 0; i < numOrbits; i++) {
-      const orbitRing = new THREE.Group();
-      
-      // Calculate rotation offset for orbit orientation
-      orbitRing.rotation.x = (Math.random() - 0.5) * Math.PI;
-      orbitRing.rotation.y = (Math.random() - 0.5) * Math.PI;
-      orbitRing.rotation.z = (Math.random() - 0.5) * Math.PI;
-
-      // Draw Orbit Path Ring
-      const radius = 2.8 + i * 0.7;
-      const ringGeom = new THREE.RingGeometry(radius - 0.015, radius + 0.015, 64);
-      ringGeom.rotateX(Math.PI / 2);
-      const ring = new THREE.Mesh(ringGeom, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.12 }));
-      orbitRing.add(ring);
-
-      // Create Electron Sphere
-      const electron = new THREE.Mesh(electronGeom, electronMat);
-      // Store custom properties on electron object
-      electron.userData = {
-        angle: Math.random() * Math.PI * 2,
-        speed: (0.015 + Math.random() * 0.02) * (Math.random() > 0.5 ? 1 : -1),
-        radius: radius
-      };
-      orbitRing.add(electron);
-
-      // Add orbital particles wave/cloud
-      const particleCount = 20;
-      const points = [];
-      for (let p = 0; p < particleCount; p++) {
-        const theta = (p / particleCount) * Math.PI * 2;
-        points.push(new THREE.Vector3(radius * Math.cos(theta), 0, radius * Math.sin(theta)));
-      }
-      
-      const waveMat = new THREE.LineDashedMaterial({
-        color: 0x06b6d4,
-        dashSize: 0.2,
-        gapSize: 0.1,
-        transparent: true,
-        opacity: 0.35
-      });
-      const waveGeom = new THREE.BufferGeometry().setFromPoints(points);
-      const wave = new THREE.LineLoop(waveGeom, waveMat);
-      orbitRing.add(wave);
-
-      group.add(orbitRing);
-      orbitGroups.push(orbitRing);
-    }
-
-    group.userData = { orbitGroups };
-    models.phys = group;
-  }
-
-  // Switch Active Model
-  function switchModel(name) {
-    if (currentModel) {
-      scene.remove(currentModel);
-    }
-    
-    currentModel = models[name];
-    if (currentModel) {
-      currentModel.scale.set(0.01, 0.01, 0.01);
-      scene.add(currentModel);
-      activeModelName = name;
-      
-      // Animate scale in
-      let scale = 0.01;
-      const animIn = () => {
-        if (scale < 1.0) {
-          scale += 0.08;
-          currentModel.scale.set(scale, scale, scale);
-          requestAnimationFrame(animIn);
-        } else {
-          currentModel.scale.set(1, 1, 1);
-        }
-      };
-      animIn();
-    }
-  }
-
-  // Resize handler
-  function handleResize() {
-    if (!renderer || !camera) return;
-    const width = container.clientWidth;
-    const height = container.clientHeight;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-  }
-
-  window.addEventListener('resize', handleResize);
-
-  // Switcher UI Interaction
   const switchBtns = document.querySelectorAll('.lab-btn');
   const infoContents = document.querySelectorAll('.info-content');
+  let activeModelName = 'dna';
 
-  switchBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetModel = btn.dataset.model;
-      if (targetModel === activeModelName) return;
+  // Desktop WebGL Route (Three.js)
+  if (isDesktop) {
+    // Safely wait for THREE dependencies
+    if (typeof THREE === 'undefined') {
+      setTimeout(init3DLab, 100);
+      return;
+    }
 
-      // Toggle active buttons
-      switchBtns.forEach(b => {
-        b.classList.remove('active');
-        b.setAttribute('aria-selected', 'false');
-      });
-      btn.classList.add('active');
-      btn.setAttribute('aria-selected', 'true');
+    let scene, camera, renderer, controls;
+    let currentModel = null;
+    const models = {};
 
-      // Toggle active description content
-      infoContents.forEach(info => {
-        info.classList.remove('active');
-      });
-      const activeInfo = document.getElementById(`info-${targetModel}`);
-      if (activeInfo) activeInfo.classList.add('active');
+    const initScene = () => {
+      scene = new THREE.Scene();
 
-      // Switch the model inside the 3D canvas
-      switchModel(targetModel);
-      
-      // Show dynamic toast feedback
-      if (typeof showToast === 'function') {
-        const label = btn.textContent.trim().split(' ').slice(1).join(' ');
-        showToast(`🔬 Loaded ${label} 3D Model!`, 'success');
+      const w = container.clientWidth || 320;
+      const h = container.clientHeight || 380;
+
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+      camera.position.set(0, 0, 15);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+
+      if (typeof THREE.OrbitControls !== 'undefined') {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+      } else if (typeof OrbitControls !== 'undefined') {
+        controls = new OrbitControls(camera, renderer.domElement);
+      } else {
+        controls = new window.OrbitControls(camera, renderer.domElement);
       }
-    });
-  });
+      
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.enableZoom = true;
+      controls.minDistance = 6;
+      controls.maxDistance = 20;
+      controls.enablePan = false;
 
-  // Animation Loop
-  function animate() {
-    requestAnimationFrame(animate);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+      scene.add(ambientLight);
 
-    // Rotate current model automatically if not dragging
-    if (currentModel) {
-      if (activeModelName === 'dna') {
-        currentModel.rotation.y += 0.006;
-      } else if (activeModelName === 'chem') {
-        currentModel.rotation.y += 0.004;
-        currentModel.rotation.x += 0.002;
-      } else if (activeModelName === 'phys') {
-        // Spin nucleus
-        currentModel.rotation.y += 0.002;
-        
-        // Update electron positions
-        const orbits = currentModel.userData.orbitGroups;
-        if (orbits) {
-          orbits.forEach(orbit => {
-            orbit.children.forEach(child => {
-              if (child.userData && typeof child.userData.angle !== 'undefined') {
-                child.userData.angle += child.userData.speed;
-                child.position.x = child.userData.radius * Math.cos(child.userData.angle);
-                child.position.z = child.userData.radius * Math.sin(child.userData.angle);
-              }
-            });
-          });
+      const dirLight1 = new THREE.DirectionalLight(0x00f2fe, 1.5);
+      dirLight1.position.set(10, 10, 10);
+      scene.add(dirLight1);
+
+      const dirLight2 = new THREE.DirectionalLight(0xff007f, 1.2);
+      dirLight2.position.set(-10, -10, 10);
+      scene.add(dirLight2);
+
+      const pointLight = new THREE.PointLight(0x7c3aed, 2, 20);
+      pointLight.position.set(0, 0, 0);
+      scene.add(pointLight);
+
+      buildDNA();
+      buildChemistry();
+      buildPhysics();
+
+      switchModel('dna');
+      animate();
+    };
+
+    const buildDNA = () => {
+      const group = new THREE.Group();
+      const sphereGeom = new THREE.SphereGeometry(0.2, 16, 16);
+      const cyanMat = new THREE.MeshPhongMaterial({ color: 0x00f2fe, emissive: 0x004c59, shininess: 30 });
+      const pinkMat = new THREE.MeshPhongMaterial({ color: 0xff007f, emissive: 0x610039, shininess: 30 });
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
+
+      const points = 26;
+      const r = 2.4;
+      const h = 8;
+
+      for (let i = 0; i < points; i++) {
+        const t = (i / points) * Math.PI * 4;
+        const y = (i / points) * h - h / 2;
+
+        const xA = r * Math.cos(t);
+        const zA = r * Math.sin(t);
+        const nodeA = new THREE.Mesh(sphereGeom, cyanMat);
+        nodeA.position.set(xA, y, zA);
+        group.add(nodeA);
+
+        const xB = r * Math.cos(t + Math.PI);
+        const zB = r * Math.sin(t + Math.PI);
+        const nodeB = new THREE.Mesh(sphereGeom, pinkMat);
+        nodeB.position.set(xB, y, zB);
+        group.add(nodeB);
+
+        const rungPoints = [new THREE.Vector3(xA, y, zA), new THREE.Vector3(xB, y, zB)];
+        const rungGeom = new THREE.BufferGeometry().setFromPoints(rungPoints);
+        const rung = new THREE.Line(rungGeom, lineMat);
+        group.add(rung);
+      }
+
+      models.dna = group;
+    };
+
+    const buildChemistry = () => {
+      const group = new THREE.Group();
+      const geom = new THREE.IcosahedronGeometry(2.8, 1);
+      
+      const atomGeom = new THREE.SphereGeometry(0.16, 16, 16);
+      const atomMat = new THREE.MeshPhongMaterial({ color: 0x7c3aed, emissive: 0x2d105e, shininess: 50 });
+
+      const pos = geom.attributes.position;
+      const vertices = [];
+      const threshold = 0.01;
+
+      for (let i = 0; i < pos.count; i++) {
+        const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i));
+        let duplicate = false;
+        for (const uniqueV of vertices) {
+          if (uniqueV.distanceTo(v) < threshold) {
+            duplicate = true;
+            break;
+          }
+        }
+        if (!duplicate) {
+          vertices.push(v);
         }
       }
-    }
 
-    if (controls) {
-      controls.update();
-    }
+      vertices.forEach(v => {
+        const sphere = new THREE.Mesh(atomGeom, atomMat);
+        sphere.position.copy(v);
+        group.add(sphere);
+      });
 
-    renderer.render(scene, camera);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0x00f2fe, transparent: true, opacity: 0.4 });
+      for (let i = 0; i < vertices.length; i++) {
+        for (let j = i + 1; j < vertices.length; j++) {
+          const d = vertices[i].distanceTo(vertices[j]);
+          if (d > 1.2 && d < 2.2) {
+            const rungGeom = new THREE.BufferGeometry().setFromPoints([vertices[i], vertices[j]]);
+            const bond = new THREE.Line(rungGeom, lineMat);
+            group.add(bond);
+          }
+        }
+      }
+
+      models.chem = group;
+    };
+
+    const buildPhysics = () => {
+      const group = new THREE.Group();
+      const nucleusGeom = new THREE.SphereGeometry(0.6, 32, 32);
+      const nucleusMat = new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x7c3aed, shininess: 100 });
+      const nucleus = new THREE.Mesh(nucleusGeom, nucleusMat);
+      group.add(nucleus);
+
+      const orbits = 3;
+      const electronGeom = new THREE.SphereGeometry(0.14, 16, 16);
+      const electronMat = new THREE.MeshPhongMaterial({ color: 0x00f2fe, emissive: 0x00363f, shininess: 80 });
+
+      const orbitGroups = [];
+
+      for (let i = 0; i < orbits; i++) {
+        const orbitRing = new THREE.Group();
+        orbitRing.rotation.x = (Math.random() - 0.5) * Math.PI;
+        orbitRing.rotation.y = (Math.random() - 0.5) * Math.PI;
+
+        const radius = 2.6 + i * 0.7;
+        const ringGeom = new THREE.RingGeometry(radius - 0.015, radius + 0.015, 64);
+        ringGeom.rotateX(Math.PI / 2);
+        const ring = new THREE.Mesh(ringGeom, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.08 }));
+        orbitRing.add(ring);
+
+        const electron = new THREE.Mesh(electronGeom, electronMat);
+        electron.userData = {
+          angle: Math.random() * Math.PI * 2,
+          speed: (0.02 + Math.random() * 0.02) * (Math.random() > 0.5 ? 1 : -1),
+          radius: radius
+        };
+        orbitRing.add(electron);
+
+        group.add(orbitRing);
+        orbitGroups.push(orbitRing);
+      }
+
+      group.userData = { orbitGroups };
+      models.phys = group;
+    };
+
+    const switchModel = (name) => {
+      if (currentModel) {
+        scene.remove(currentModel);
+      }
+      currentModel = models[name];
+      if (currentModel) {
+        currentModel.scale.set(0.01, 0.01, 0.01);
+        scene.add(currentModel);
+        activeModelName = name;
+
+        gsap.to(currentModel.scale, {
+          x: 1,
+          y: 1,
+          z: 1,
+          duration: 1,
+          ease: 'elastic.out(1, 0.5)'
+        });
+      }
+    };
+
+    const animate = () => {
+      requestAnimationFrame(animate);
+
+      if (currentModel) {
+        if (activeModelName === 'dna') {
+          currentModel.rotation.y += 0.007;
+        } else if (activeModelName === 'chem') {
+          currentModel.rotation.y += 0.004;
+          currentModel.rotation.x += 0.002;
+        } else if (activeModelName === 'phys') {
+          currentModel.rotation.y += 0.002;
+          const orbits = currentModel.userData.orbitGroups;
+          if (orbits) {
+            orbits.forEach(orbit => {
+              orbit.children.forEach(child => {
+                if (child.userData && typeof child.userData.angle !== 'undefined') {
+                  child.userData.angle += child.userData.speed;
+                  child.position.x = child.userData.radius * Math.cos(child.userData.angle);
+                  child.position.z = child.userData.radius * Math.sin(child.userData.angle);
+                }
+              });
+            });
+          }
+        }
+      }
+
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    };
+
+    // Swapping trigger
+    switchBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetModel = btn.dataset.model;
+        if (targetModel === activeModelName) return;
+
+        switchBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        infoContents.forEach(info => info.classList.remove('active'));
+        const activeInfo = document.getElementById(`info-${targetModel}`);
+        if (activeInfo) activeInfo.classList.add('active');
+
+        switchModel(targetModel);
+        
+        const label = btn.textContent.trim().split(' ').slice(1).join(' ');
+        showToast(`Loaded ${label} blueprint`, true);
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      if (!renderer || !camera) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+
+    initScene();
+
+  } else {
+    // ─── MOBILE/TABLET CONDITIONAL LIGHTWEIGHT FALLBACKS (NO WebGL) ───
+    const loadMobileFallback = (name) => {
+      activeModelName = name;
+      container.innerHTML = ''; // Empty previous
+      
+      let htmlMarkup = '';
+
+      if (name === 'dna') {
+        htmlMarkup = `
+          <div class="mobile-lab-fallback">
+            <div class="fallback-visual-container">
+              <div class="dna-fallback-spiral">
+                ${Array.from({ length: 12 }, (_, i) => `<div class="dna-rung" style="--i: ${i};"></div>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (name === 'chem') {
+        htmlMarkup = `
+          <div class="mobile-lab-fallback">
+            <div class="fallback-visual-container">
+              <svg viewBox="0 0 130 130" class="chem-fallback-svg">
+                <!-- Inner bonds connection lines -->
+                <line x1="65" y1="10" x2="20" y2="35" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="65" y1="10" x2="110" y2="35" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="20" y1="35" x2="15" y2="85" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="110" y1="35" x2="115" y2="85" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="15" y1="85" x2="65" y2="115" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="115" y1="85" x2="65" y2="115" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="65" y1="10" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="20" y1="35" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="110" y1="35" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="15" y1="85" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="115" y1="85" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                <line x1="65" y1="115" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
+                
+                <!-- Atom Node Spheres -->
+                <circle cx="65" cy="10" r="5" fill="var(--primary-light)" />
+                <circle cx="20" cy="35" r="5" fill="var(--accent-cyan)" />
+                <circle cx="110" cy="35" r="5" fill="var(--accent-cyan)" />
+                <circle cx="15" cy="85" r="5" fill="var(--accent-cyan)" />
+                <circle cx="115" cy="85" r="5" fill="var(--accent-cyan)" />
+                <circle cx="65" cy="115" r="5" fill="var(--primary-light)" />
+                <circle cx="65" cy="60" r="6.5" fill="var(--accent-pink)" />
+              </svg>
+            </div>
+          </div>
+        `;
+      } else if (name === 'phys') {
+        htmlMarkup = `
+          <div class="mobile-lab-fallback">
+            <div class="fallback-visual-container">
+              <div class="phys-fallback-atom">
+                <div class="atom-nucleus"></div>
+                <div class="atom-orbit atom-orbit-1"><div class="atom-electron"></div></div>
+                <div class="atom-orbit atom-orbit-2"><div class="atom-electron"></div></div>
+                <div class="atom-orbit atom-orbit-3"><div class="atom-electron"></div></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = htmlMarkup;
+      
+      // Animate fallback wrapper scale using lightweight GSAP tween
+      gsap.fromTo(container.querySelector('.fallback-visual-container'), 
+        { scale: 0.8, opacity: 0 }, 
+        { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.5)' }
+      );
+    };
+
+    // Load initial DNA fallback on mobile
+    loadMobileFallback('dna');
+
+    // Switcher Click Handlers for Mobile
+    switchBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetModel = btn.dataset.model;
+        if (targetModel === activeModelName) return;
+
+        switchBtns.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        infoContents.forEach(info => info.classList.remove('active'));
+        const activeInfo = document.getElementById(`info-${targetModel}`);
+        if (activeInfo) activeInfo.classList.add('active');
+
+        loadMobileFallback(targetModel);
+        
+        const label = btn.textContent.trim().split(' ').slice(1).join(' ');
+        showToast(`Swapped to ${label} graphic`, true);
+      });
+    });
+
+    // Remove drag instruction hint on mobile
+    const hint = document.querySelector('.canvas-hint');
+    if (hint) {
+      hint.textContent = 'Tap switchers to load graphics';
+    }
   }
-
-  // Initialize
-  initScene();
 })();
 
-// ─── INITIALIZE INFO LOGS ───
-console.log('%c🎓 Medkarma', 'font-size:24px;font-weight:900;color:#a855f7;');
-console.log('%cOwner: Sagir | Admin: Shuvajit', 'font-size:12px;color:#94a3b8;');
-console.log('%cJoin us: https://t.me/themedkarma', 'font-size:12px;color:#06b6d4;');
+// ─── NEBULA COSMOS BACKGROUND ANIMATION (Desktop Only) ───
+(function initNebulaBackground() {
+  if (!isDesktop) return;
 
+  const canvas = document.getElementById('nebula-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  let W, H, animId;
+  let t = 0;
+
+  // ── Resize handler ──
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── Star field ──
+  const STAR_COUNT = 280;
+  const stars = Array.from({ length: STAR_COUNT }, () => ({
+    x: Math.random() * 2000 - 1000,
+    y: Math.random() * 2000 - 1000,
+    r: Math.random() * 1.4 + 0.2,
+    s: Math.random() * 0.6 + 0.2,      // shimmer speed
+    p: Math.random() * Math.PI * 2,    // phase
+  }));
+
+  // ── Plasma / Nebula nodes ──
+  const NODE_COUNT = 7;
+  const nodes = Array.from({ length: NODE_COUNT }, (_, i) => ({
+    x: Math.random() * W,
+    y: Math.random() * H,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    radius: 200 + Math.random() * 220,
+    hue: [270, 195, 320, 240, 290, 180, 260][i],
+    sat: 70 + Math.random() * 30,
+    phase: Math.random() * Math.PI * 2,
+  }));
+
+  // ── Energy particles (fast tendrils) ──
+  const PARTICLE_COUNT = 120;
+  const particles = Array.from({ length: PARTICLE_COUNT }, () => spawnParticle());
+
+  function spawnParticle() {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.25 + Math.random() * 0.8;
+    return {
+      x: Math.random() * 2000 - 500,
+      y: Math.random() * 2000 - 500,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: Math.random(),
+      maxLife: 0.005 + Math.random() * 0.008,
+      size: 0.5 + Math.random() * 1.5,
+      hue: 200 + Math.random() * 140,
+    };
+  }
+
+  // ── Aurora wave bands ──
+  function drawAurora(t) {
+    const bands = [
+      { y: H * 0.15, hue: 270, amp: 60, freq: 0.0008, speed: 0.0003 },
+      { y: H * 0.5,  hue: 195, amp: 80, freq: 0.0006, speed: 0.0004 },
+      { y: H * 0.82, hue: 310, amp: 50, freq: 0.001,  speed: 0.0002 },
+    ];
+
+    bands.forEach(({ y, hue, amp, freq, speed }) => {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      for (let x = 0; x <= W; x += 4) {
+        const wave = Math.sin(x * freq + t * speed * 2000) * amp
+                   + Math.sin(x * freq * 2.3 + t * speed * 1700) * amp * 0.4;
+        ctx.lineTo(x, y + wave);
+      }
+      ctx.lineTo(W, H + 200);
+      ctx.lineTo(0, H + 200);
+      ctx.closePath();
+
+      const grad = ctx.createLinearGradient(0, y - amp - 30, 0, y + amp + 80);
+      grad.addColorStop(0,   `hsla(${hue},85%,65%,0)`);
+      grad.addColorStop(0.3, `hsla(${hue},85%,60%,0.035)`);
+      grad.addColorStop(0.6, `hsla(${hue},75%,55%,0.025)`);
+      grad.addColorStop(1,   `hsla(${hue},70%,40%,0)`);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    });
+  }
+
+  // ── Main render loop ──
+  function render(ts) {
+    animId = requestAnimationFrame(render);
+    t = ts * 0.001;
+
+    // Clear with very slight trail effect for motion blur
+    ctx.fillStyle = 'rgba(5,4,14,0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    // 1) Nebula plasma blobs
+    nodes.forEach(n => {
+      n.x += n.vx;
+      n.y += n.vy;
+      if (n.x < -300 || n.x > W + 300) n.vx *= -1;
+      if (n.y < -300 || n.y > H + 300) n.vy *= -1;
+
+      const pulse = Math.sin(t * 0.4 + n.phase) * 0.35 + 0.65;
+      const r = n.radius * pulse;
+
+      const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, r);
+      g.addColorStop(0,   `hsla(${n.hue},${n.sat}%,60%,0.12)`);
+      g.addColorStop(0.5, `hsla(${n.hue},${n.sat}%,45%,0.06)`);
+      g.addColorStop(1,   `hsla(${n.hue},${n.sat}%,30%,0)`);
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    });
+
+    // 2) Aurora waves
+    drawAurora(t);
+
+    // 3) Stars (shimmer)
+    stars.forEach(s => {
+      const alpha = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * s.s + s.p));
+      const sx = ((s.x + W * 0.5 + t * 4) % W + W) % W;
+      const sy = ((s.y + H * 0.5) % H + H) % H;
+      ctx.beginPath();
+      ctx.arc(sx, sy, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,220,255,${alpha * 0.75})`;
+      ctx.fill();
+    });
+
+    // 4) Energy particles / tendrils
+    particles.forEach((p, i) => {
+      p.life += p.maxLife;
+      if (p.life >= 1) {
+        particles[i] = spawnParticle();
+        return;
+      }
+
+      // Flow toward nearest nebula node (gravity)
+      let fx = 0, fy = 0;
+      nodes.forEach(n => {
+        const dx = n.x - p.x, dy = n.y - p.y;
+        const d2 = dx * dx + dy * dy + 1;
+        const f = 0.15 / d2;
+        fx += dx * f;
+        fy += dy * f;
+      });
+      p.vx += fx;
+      p.vy += fy;
+      p.vx *= 0.985;
+      p.vy *= 0.985;
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Life arc: fade in → bright → fade out
+      const alpha = Math.sin(p.life * Math.PI) * 0.7;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue},90%,75%,${alpha})`;
+      ctx.fill();
+    });
+
+    // 5) Subtle centre vignette gradient
+    const vignette = ctx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, H*1.0);
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, 'rgba(2,2,10,0.55)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Start after a brief delay so splash screen plays first
+  setTimeout(() => {
+    canvas.classList.add('ready');
+    requestAnimationFrame(render);
+  }, 600);
+
+  // Pause when tab is hidden to save resources
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animId);
+    } else {
+      requestAnimationFrame(render);
+    }
+  });
+})();
+
+console.log('%c⭐ Medkarma Conditional Setup Loaded Successfully', 'color:#00f2fe;font-weight:bold;font-size:14px;');
