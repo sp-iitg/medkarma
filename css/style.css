@@ -56,7 +56,7 @@ html {
 }
 
 /* On desktop, initial scroll behavior is used because Lenis manages smooth scrolling */
-body.is-desktop html {
+html.is-desktop {
   scroll-behavior: initial;
 }
 
@@ -1008,22 +1008,155 @@ header {
 }
 
 .reveal, .reveal-left, .reveal-right {
+  opacity: 1;
+  transform: none;
+}
+
+html.is-desktop .reveal, 
+html.is-desktop .reveal-left, 
+html.is-desktop .reveal-right {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s var(--ease-custom), transform 0.8s var(--ease-custom);
 }
 
-.reveal.visible, .reveal-left.visible, .reveal-right.visible {
+html.is-desktop .reveal.visible, 
+html.is-desktop .reveal-left.visible, 
+html.is-desktop .reveal-right.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
 /* Disable scroll-triggered translate slides on mobile to avoid layout shifts */
 @media (max-width: 768px) {
-  .reveal, .reveal-left, .reveal-right {
+  html.is-desktop .reveal, 
+  html.is-desktop .reveal-left, 
+  html.is-desktop .reveal-right {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+}
+
+/* ─── CARD WRAPPERS ─── */
+.card-outer {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(3, 3, 8, 0.65);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  overflow: hidden;
+  z-index: 1;
+  transition: border-color 0.4s, background-color 0.4s, box-shadow 0.4s;
+}
+
+/* ─── BUTTON INTERACTION ORBS ─── */
+.btn-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  transition: all 0.4s var(--ease-custom);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.btn-orb svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.4s var(--ease-custom);
+}
+
+/* Button & Card Hover states triggering Orb reactions (desktop only) */
+@media (pointer: fine) {
+  /* 1. Navbar Telegram Button */
+  .nav-tg-btn:hover .btn-orb {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+    transform: scale(1.05);
+  }
+
+  .nav-tg-btn:hover .btn-orb svg {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  /* 2. Primary Button (Join Telegram) */
+  .btn-primary:hover .btn-orb {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  .btn-primary:hover .btn-orb svg {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  /* 3. Secondary Button (Explore Notes) */
+  .btn-secondary:hover .btn-orb {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .btn-secondary:hover .btn-orb span {
+    transform: scale(1.15);
+    display: inline-block;
+  }
+
+  /* 4. WhatsApp Button */
+  .btn-whatsapp:hover .btn-orb {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+    color: #25D366;
+  }
+
+  .btn-whatsapp:hover .btn-orb svg {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  /* 5. Telegram Banner Button */
+  .btn-telegram:hover .btn-orb {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+    color: var(--accent-cyan);
+  }
+
+  .btn-telegram:hover .btn-orb svg {
+    transform: rotate(15deg) scale(1.1);
+  }
+
+  /* 6. APK Buttons (Download Arrow) */
+  .btn-apk:hover .btn-orb {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: rgba(0, 242, 254, 0.4);
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.3);
+    transform: scale(1.05);
+  }
+
+  .btn-apk:hover .btn-orb svg {
+    transform: translateY(2.5px);
   }
 }
 
@@ -1047,27 +1180,31 @@ header {
 }
 
 .exam-card {
-  background: var(--bg-card);
-  border: 1px solid var(--glass-border);
+  text-decoration: none;
   border-radius: var(--radius-lg);
+  display: block;
+  height: 100%;
+}
+
+.exam-card .card-inner {
   padding: 36px 30px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  text-decoration: none;
-  transition: border-color 0.4s, background-color 0.4s, box-shadow 0.4s;
-  position: relative;
-  overflow: hidden;
+  border-radius: inherit;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
   height: 100%;
 }
 
-.exam-card::before {
+.exam-card .card-inner::before {
   content: '';
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 50% 0%, var(--card-glow-color, rgba(124, 58, 237, 0.1)), transparent 60%);
   opacity: 0;
   transition: opacity 0.4s;
+  z-index: -1;
 }
 
 .exam-card.jee { --card-glow-color: rgba(0, 242, 254, 0.15); }
@@ -1138,13 +1275,13 @@ header {
 
 /* Hover effects restricted to mouse device indicators */
 @media (pointer: fine) {
-  .exam-card:hover {
+  .exam-card:hover .card-inner {
     background: var(--bg-card-hover);
     border-color: var(--card-glow-color);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
   }
 
-  .exam-card:hover::before {
+  .exam-card:hover .card-inner::before {
     opacity: 1;
   }
 
@@ -1184,15 +1321,21 @@ header {
   cursor: pointer;
 }
 
-.feature-card-inner {
+.feature-card .card-inner {
   position: relative;
   width: 100%;
   height: 100%;
   transition: transform 0.8s var(--ease-custom);
   transform-style: preserve-3d;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  overflow: visible;
 }
 
-.feature-card.flipped .feature-card-inner {
+.feature-card.flipped .card-inner {
   transform: rotateY(180deg);
 }
 
@@ -1650,16 +1793,22 @@ body.is-desktop #3d-canvas-container:active {
 }
 
 .material-item {
-  background: var(--bg-card);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
+  display: block;
+  transition: transform 0.3s var(--ease-custom);
+  position: relative;
+}
+
+.material-item .card-inner {
   padding: 24px;
   display: flex;
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: all 0.3s var(--ease-custom);
-  position: relative;
+  border-radius: inherit;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  height: 100%;
 }
 
 .material-icon-wrap {
@@ -1718,11 +1867,14 @@ body.is-desktop #3d-canvas-container:active {
 }
 
 @media (pointer: fine) {
-  .material-item:hover {
+  .material-item:hover .card-inner {
     background: var(--bg-card-hover);
     border-color: rgba(255, 255, 255, 0.18);
-    transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .material-item:hover {
+    transform: translateY(-2px);
   }
 
   .material-item:hover .material-icon-wrap {
@@ -1957,13 +2109,19 @@ body.is-desktop #3d-canvas-container:active {
 }
 
 .team-card {
-  background: var(--bg-card);
-  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
+  display: block;
+}
+
+.team-card .card-inner {
   padding: 30px;
   text-align: center;
-  transition: all 0.3s var(--ease-custom);
+  border-radius: inherit;
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  height: 100%;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .team-avatar {
@@ -1987,10 +2145,9 @@ body.is-desktop #3d-canvas-container:active {
 }
 
 @media (pointer: fine) {
-  .team-card:hover {
+  .team-card:hover .card-inner {
     background: var(--bg-card-hover);
     border-color: rgba(0, 242, 254, 0.25);
-    transform: translateY(-3px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   }
 }
@@ -2188,4 +2345,28 @@ body.is-desktop #3d-canvas-container:active {
 
 .toast-notice.success {
   border-color: var(--accent-green);
+}
+
+/* ─── MOBILE & TABLET SCROLL PERFORMANCE OPTIMIZATIONS ─── */
+@media (max-width: 1024px) {
+  /* Disable expensive orbital animations and lower blur load on mobile GPU */
+  .bg-orb {
+    animation: none !important;
+    filter: blur(80px) !important;
+  }
+
+  /* Disable backdrop-filter to prevent heavy paint/repaint cycles during scroll */
+  .navbar, 
+  .stats-bar, 
+  .card-inner, 
+  .feature-card-front, 
+  .feature-card-back, 
+  .lab-container, 
+  .testimonial-card, 
+  .tg-cta, 
+  .footer {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background-color: rgba(10, 10, 20, 0.94) !important;
+  }
 }

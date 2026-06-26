@@ -13,8 +13,10 @@ const isFinePointer = window.matchMedia('(pointer: fine)').matches;
 const isDesktop = isFinePointer && !isTouchDevice;
 
 if (isDesktop) {
+  document.documentElement.classList.add('is-desktop');
   document.body.classList.add('is-desktop');
 } else {
+  document.documentElement.classList.add('is-mobile');
   document.body.classList.add('is-mobile');
 }
 
