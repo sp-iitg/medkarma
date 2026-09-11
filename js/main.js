@@ -94,77 +94,82 @@ if (isDesktop) {
   }
 
   function createTextPoints() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+    try {
+      width = canvas.width = window.innerWidth || 800;
+      height = canvas.height = window.innerHeight || 600;
 
-    const offCanvas = document.createElement('canvas');
-    const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
-    offCanvas.width = width;
-    offCanvas.height = height;
+      const offCanvas = document.createElement('canvas');
+      const offCtx = offCanvas.getContext('2d', { willReadFrequently: true });
+      if (!offCtx) return;
+      offCanvas.width = width;
+      offCanvas.height = height;
 
-    const fontSize = Math.min(width / 5, 140);
-    offCtx.font = `300 ${fontSize}px sans-serif`;
-    offCtx.fillStyle = 'white';
-    offCtx.textAlign = 'center';
-    offCtx.textBaseline = 'middle';
-    offCtx.fillText("Medkarma", width / 2, height / 2);
+      const fontSize = Math.min(width / 5, 140);
+      offCtx.font = `300 ${fontSize}px sans-serif`;
+      offCtx.fillStyle = 'white';
+      offCtx.textAlign = 'center';
+      offCtx.textBaseline = 'middle';
+      offCtx.fillText("Medkarma", width / 2, height / 2);
 
-    const data = offCtx.getImageData(0, 0, width, height).data;
-    textPoints = [];
+      const data = offCtx.getImageData(0, 0, width, height).data;
+      textPoints = [];
 
-    const gap = 3;
-    for (let y = 0; y < height; y += gap) {
-      for (let x = 0; x < width; x += gap) {
-        const index = (y * width + x) * 4;
-        const alpha = data[index + 3];
-        if (alpha > 128) {
-          textPoints.push({ x: x, y: y });
+      const gap = 3;
+      for (let y = 0; y < height; y += gap) {
+        for (let x = 0; x < width; x += gap) {
+          const index = (y * width + x) * 4;
+          const alpha = data[index + 3];
+          if (alpha > 128) {
+            textPoints.push({ x: x, y: y });
+          }
         }
       }
+
+      textPoints.sort((a, b) => a.x - b.x);
+
+      currentIndex = 0;
+      particles = [];
+    } catch (err) {
+      console.warn('Splash createTextPoints error:', err);
     }
-
-    textPoints.sort((a, b) => a.x - b.x);
-
-    currentIndex = 0;
-    particles = [];
   }
 
   function startScattering() {
-    particles.forEach(p => {
-      p.scattered = true;
-      const dx = p.x - width / 2;
-      const dy = p.y - height / 2;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const speed = Math.random() * 5 + 2.5; // Outward velocity magnitude
-      p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 1.5;
-      p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 1.5;
-    });
+    try {
+      particles.forEach(p => {
+        p.scattered = true;
+        const dx = p.x - width / 2;
+        const dy = p.y - height / 2;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const speed = Math.random() * 5 + 2.5;
+        p.vx = (dx / dist) * speed + (Math.random() - 0.5) * 1.5;
+        p.vy = (dy / dist) * speed + (Math.random() - 0.5) * 1.5;
+      });
+    } catch (err) {}
   }
 
   function dismissSplash() {
     if (hasDismissed) return;
     hasDismissed = true;
 
-    // Trigger magical dispersion of particles
     startScattering();
+    
+    if (splash) {
+      splash.classList.add('fade-bg');
+      splash.classList.add('hidden');
+      splash.style.display = 'none';
+      if (splash.parentNode) splash.parentNode.removeChild(splash);
+    }
 
-    // Dissolve background of splash screen
-    splash.classList.add('fade-bg');
-
-    // Add loaded class to body to trigger staggered hero entrance animations
     document.body.classList.add('loaded');
 
-    // Trigger entrance animations
-    triggerEntranceAnimations();
+    try {
+      triggerEntranceAnimations();
+    } catch (e) {
+      console.warn('Entrance animation warning:', e);
+    }
 
-    // Wait for scattering particles to fade completely, then cleanup
-    setTimeout(() => {
-      splash.classList.add('hidden');
-      setTimeout(() => {
-        cancelAnimationFrame(animationFrameId);
-        splash.remove();
-      }, 600);
-    }, 1200);
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
   }
 
   window.addEventListener('resize', () => {
@@ -208,49 +213,59 @@ if (isDesktop) {
 
     // Trigger dismissal when particles have arrived and the window load event has fired
     if (!hasDismissed && currentIndex >= textPoints.length && allArrived && isPageLoaded) {
-      setTimeout(dismissSplash, 800);
+      setTimeout(dismissSplash, 400);
     }
 
     animationFrameId = requestAnimationFrame(animate);
   }
 
-  // Handle page loading
-  window.addEventListener('load', () => {
+  // Handle page loading robustly
+  const markLoaded = () => {
     isPageLoaded = true;
-    // Failsafe timeout to ensure loading screen vanishes within a reasonable timeframe
-    setTimeout(dismissSplash, 3500);
-  });
+    setTimeout(dismissSplash, 800);
+  };
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    markLoaded();
+  } else {
+    window.addEventListener('load', markLoaded, { once: true });
+    document.addEventListener('DOMContentLoaded', markLoaded, { once: true });
+  }
+
+  // Absolute hard failsafe: dismiss splash screen within 1.2 seconds max
+  setTimeout(dismissSplash, 1200);
 
   animate();
 })();
 
 // ─── LENIS SMOOTH SCROLLER (Desktop Only) ───
 let lenis;
-if (isDesktop) {
-  lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    direction: 'vertical',
-    gestureDirection: 'vertical',
-    smooth: true,
-    mouseMultiplier: 1,
-    smoothTouch: false,
-    touchMultiplier: 2,
-    infinite: false,
-  });
+if (isDesktop && typeof Lenis !== 'undefined') {
+  try {
+    lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      direction: 'vertical',
+      gestureDirection: 'vertical',
+      smooth: true,
+      mouseMultiplier: 1,
+      smoothTouch: false,
+      touchMultiplier: 2,
+      infinite: false,
+    });
 
-  const raf = (time) => {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  };
-  requestAnimationFrame(raf);
-
-  // Bind ScrollTrigger to update on scroll
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-  gsap.ticker.lagSmoothing(0);
+    if (typeof ScrollTrigger !== 'undefined') {
+      lenis.on('scroll', ScrollTrigger.update);
+    }
+    if (typeof gsap !== 'undefined') {
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+      gsap.ticker.lagSmoothing(0);
+    }
+  } catch (e) {
+    console.warn('Lenis scroll helper warning:', e);
+  }
 }
 
 // ─── HERO & INITIAL PAGE ENTRANCE ANIMATIONS (Staggered GSAP) ───
@@ -810,8 +825,17 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   const infoContents = document.querySelectorAll('.info-content');
   let activeModelName = 'dna';
 
-  // Desktop WebGL Route (Three.js)
-  if (isDesktop) {
+  // WebGL Availability Check (Universal: PC, Android, iOS, Tablets)
+  function supportsWebGL() {
+    try {
+      const canvas = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  if (supportsWebGL()) {
     // Safely wait for THREE dependencies
     if (typeof THREE === 'undefined') {
       setTimeout(init3DLab, 100);
@@ -831,25 +855,39 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
       camera.position.set(0, 0, 15);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
       renderer.setSize(w, h);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      if (renderer.domElement) {
+        renderer.domElement.style.touchAction = 'none';
+        renderer.domElement.style.width = '100%';
+        renderer.domElement.style.height = '100%';
+      }
       container.appendChild(renderer.domElement);
 
       if (typeof THREE.OrbitControls !== 'undefined') {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
       } else if (typeof OrbitControls !== 'undefined') {
         controls = new OrbitControls(camera, renderer.domElement);
-      } else {
+      } else if (typeof window.OrbitControls !== 'undefined') {
         controls = new window.OrbitControls(camera, renderer.domElement);
       }
       
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.05;
-      controls.enableZoom = true;
-      controls.minDistance = 6;
-      controls.maxDistance = 20;
-      controls.enablePan = false;
+      if (controls) {
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.enableZoom = true;
+        controls.minDistance = 5;
+        controls.maxDistance = 22;
+        controls.enablePan = false;
+        controls.rotateSpeed = 0.8;
+        if (typeof THREE !== 'undefined' && THREE.TOUCH) {
+          controls.touches = {
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN
+          };
+        }
+      }
 
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
       scene.add(ambientLight);
@@ -871,6 +909,17 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       buildPhysics();
 
       switchModel('dna');
+
+      // Set mobile touch hint dynamically
+      const hint = document.querySelector('.canvas-hint');
+      if (hint) {
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+          hint.textContent = 'Drag to rotate • Pinch to zoom';
+        } else {
+          hint.textContent = 'Drag to rotate • Scroll to zoom';
+        }
+      }
+
       animate();
     };
 
@@ -1070,19 +1119,24 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       });
     });
 
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       if (!renderer || !camera) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
+      const w = container.clientWidth || 320;
+      const h = container.clientHeight || 380;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+    };
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleResize, 200);
     });
 
     initScene();
 
   } else {
-    // ─── MOBILE/TABLET CONDITIONAL LIGHTWEIGHT FALLBACKS (NO WebGL) ───
+    // ─── LEGACY BROWSER FALLBACK (NO WebGL Hardware Acceleration) ───
     const loadMobileFallback = (name) => {
       activeModelName = name;
       container.innerHTML = ''; // Empty previous
@@ -1104,7 +1158,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
           <div class="mobile-lab-fallback">
             <div class="fallback-visual-container">
               <svg viewBox="0 0 130 130" class="chem-fallback-svg">
-                <!-- Inner bonds connection lines -->
                 <line x1="65" y1="10" x2="20" y2="35" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
                 <line x1="65" y1="10" x2="110" y2="35" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
                 <line x1="20" y1="35" x2="15" y2="85" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
@@ -1118,7 +1171,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 <line x1="115" y1="85" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
                 <line x1="65" y1="115" x2="65" y2="60" stroke="rgba(0, 242, 254, 0.25)" stroke-width="1.5" />
                 
-                <!-- Atom Node Spheres -->
                 <circle cx="65" cy="10" r="5" fill="var(--primary-light)" />
                 <circle cx="20" cy="35" r="5" fill="var(--accent-cyan)" />
                 <circle cx="110" cy="35" r="5" fill="var(--accent-cyan)" />
@@ -1147,17 +1199,14 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
       container.innerHTML = htmlMarkup;
       
-      // Animate fallback wrapper scale using lightweight GSAP tween
       gsap.fromTo(container.querySelector('.fallback-visual-container'), 
         { scale: 0.8, opacity: 0 }, 
         { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.5)' }
       );
     };
 
-    // Load initial DNA fallback on mobile
     loadMobileFallback('dna');
 
-    // Switcher Click Handlers for Mobile
     switchBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const targetModel = btn.dataset.model;
@@ -1181,7 +1230,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       });
     });
 
-    // Remove drag instruction hint on mobile
     const hint = document.querySelector('.canvas-hint');
     if (hint) {
       hint.textContent = 'Tap switchers to load graphics';
@@ -1380,4 +1428,144 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 })();
 
-console.log('%c⭐ Medkarma Conditional Setup Loaded Successfully', 'color:#00f2fe;font-weight:bold;font-size:14px;');
+// ─── 24FPS BACKGROUND MULTI-VIDEO FRAME PLAYER ───
+(function initBackgroundVideoPlayer() {
+  const canvas = document.getElementById('bg-video-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return;
+
+  const playlists = [
+    { folder: 'assets/frames', count: 192 },
+    { folder: 'assets/frames2', count: 240 }
+  ];
+
+  const fps = 24;
+  const frameInterval = 1000 / fps; // ~41.67ms
+  
+  const videoFrames = playlists.map((p) => new Array(p.count));
+  let activeVideoIndex = 0;
+  let currentFrameIndex = 0;
+  let lastFrameTime = 0;
+  let animId = null;
+  let isReady = false;
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    renderCurrentFrame();
+  }
+
+  function getOrLoadImage(videoIdx, frameIdx) {
+    if (videoFrames[videoIdx] && videoFrames[videoIdx][frameIdx]) {
+      return videoFrames[videoIdx][frameIdx];
+    }
+    const img = new Image();
+    const frameNum = String(frameIdx + 1).padStart(3, '0');
+    img.src = `${playlists[videoIdx].folder}/ezgif-frame-${frameNum}.jpg`;
+    img.onload = () => {
+      if (videoIdx === 0 && frameIdx === 0 && !isReady) {
+        renderCurrentFrame();
+      }
+    };
+    if (videoFrames[videoIdx]) {
+      videoFrames[videoIdx][frameIdx] = img;
+    }
+    return img;
+  }
+
+  // Preload priority first batch (initial 24 frames of video 0)
+  for (let i = 0; i < Math.min(24, playlists[0].count); i++) {
+    getOrLoadImage(0, i);
+  }
+
+  // Progressive background preloader to prevent network congestion
+  let preloadVideoIdx = 0;
+  let preloadFrameIdx = 24;
+
+  function loadNextBatch() {
+    const batchSize = 12;
+    for (let k = 0; k < batchSize; k++) {
+      if (preloadVideoIdx >= playlists.length) return; // all loaded
+      getOrLoadImage(preloadVideoIdx, preloadFrameIdx);
+      preloadFrameIdx++;
+      if (preloadFrameIdx >= playlists[preloadVideoIdx].count) {
+        preloadVideoIdx++;
+        preloadFrameIdx = 0;
+      }
+    }
+    if (preloadVideoIdx < playlists.length) {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadNextBatch, { timeout: 150 });
+      } else {
+        setTimeout(loadNextBatch, 80);
+      }
+    }
+  }
+
+  // Start background loading shortly after main thread settles
+  setTimeout(loadNextBatch, 300);
+
+  window.addEventListener('resize', resizeCanvas, { passive: true });
+  resizeCanvas();
+
+  function renderCurrentFrame() {
+    const img = getOrLoadImage(activeVideoIndex, currentFrameIndex);
+    if (!img || !img.complete || img.naturalWidth === 0) return;
+
+    const cW = canvas.width;
+    const cH = canvas.height;
+    const imgW = img.naturalWidth;
+    const imgH = img.naturalHeight;
+
+    // Aspect-ratio cover calculation
+    const scale = Math.max(cW / imgW, cH / imgH);
+    const drawW = imgW * scale;
+    const drawH = imgH * scale;
+    const drawX = (cW - drawW) / 2;
+    const drawY = (cH - drawH) / 2;
+
+    ctx.clearRect(0, 0, cW, cH);
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+    if (!isReady) {
+      isReady = true;
+      canvas.classList.add('ready');
+    }
+  }
+
+  function loop(timestamp) {
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const delta = timestamp - lastFrameTime;
+
+    if (delta >= frameInterval) {
+      currentFrameIndex++;
+      const activePlaylistCount = playlists[activeVideoIndex].count;
+      
+      // Switch to next video in sequence when current video finishes
+      if (currentFrameIndex >= activePlaylistCount) {
+        currentFrameIndex = 0;
+        activeVideoIndex = (activeVideoIndex + 1) % playlists.length;
+      }
+
+      renderCurrentFrame();
+      lastFrameTime = timestamp - (delta % frameInterval);
+    }
+
+    animId = requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (animId) cancelAnimationFrame(animId);
+    } else {
+      lastFrameTime = 0;
+      animId = requestAnimationFrame(loop);
+    }
+  });
+})();
+
+console.log('%c⭐ Medkarma Conditional Setup & 24fps Video BG Loaded Successfully', 'color:#00f2fe;font-weight:bold;font-size:14px;');
+
