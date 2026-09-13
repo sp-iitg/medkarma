@@ -482,10 +482,132 @@ header {
   transform: translateY(-1px);
 }
 
-.nav-tg-btn svg {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-cyan);
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-practice-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.15), rgba(99, 102, 241, 0.2));
+  border: 1px solid rgba(217, 70, 239, 0.45);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 50px;
+  font-family: var(--font-sub);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 16px rgba(217, 70, 239, 0.22);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-practice-btn:hover {
+  background: linear-gradient(135deg, rgba(217, 70, 239, 0.3), rgba(99, 102, 241, 0.35));
+  border-color: #d946ef;
+  box-shadow: 0 0 24px rgba(217, 70, 239, 0.45);
+  transform: translateY(-2px);
+}
+
+.nav-practice-sparkle {
+  color: #f472b6;
+  font-size: 0.95rem;
+  animation: practiceSparklePulse 2s ease-in-out infinite;
+}
+
+@keyframes practiceSparklePulse {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
+  50% { transform: scale(1.25) rotate(15deg); opacity: 1; }
+}
+
+.nav-practice-badge {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, #d946ef, #8b5cf6);
+  color: #fff;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* ─── HERO PRACTICE BANNER BUTTON ─── */
+.hero-practice-banner-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  margin-bottom: 22px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, rgba(28, 14, 46, 0.85), rgba(15, 10, 30, 0.9));
+  border: 1.5px solid rgba(217, 70, 239, 0.4);
+  border-radius: 16px;
+  text-decoration: none;
+  color: #fff;
+  box-shadow: 0 8px 32px rgba(217, 70, 239, 0.18);
+  backdrop-filter: blur(12px);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-practice-banner-btn:hover {
+  border-color: #f472b6;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 38px rgba(217, 70, 239, 0.35);
+}
+
+.banner-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.banner-sparkle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d946ef, #a855f7);
+  color: #fff;
+  font-size: 1.1rem;
+  box-shadow: 0 0 15px rgba(217, 70, 239, 0.4);
+}
+
+.banner-text-col {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.banner-main-txt {
+  font-family: var(--font-sub);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+}
+
+.banner-sub-txt {
+  font-size: 0.74rem;
+  color: #a78bfa;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.banner-arrow {
+  color: #f472b6;
+  transition: transform 0.3s;
+}
+
+.hero-practice-banner-btn:hover .banner-arrow {
+  transform: translateX(4px);
 }
 
 /* ─── HERO SECTION ─── */
