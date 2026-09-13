@@ -19,8 +19,13 @@
   <meta name="robots" content="index, follow" />
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="apple-touch-icon" href="assets/logo.png" />
-  <title>Medkarma</title>
   <link rel="stylesheet" href="css/style.css" />
+  <!-- KaTeX for High-Performance Math Equation Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <!-- Practice Hub Dedicated Stylesheet -->
+  <link rel="stylesheet" href="css/practice.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 </head>
@@ -103,7 +108,7 @@
           </div>
         </a>
         <div class="nav-actions">
-          <a href="practice.html" target="_blank" class="nav-practice-btn" aria-label="Open Question Practice Hub">
+          <a href="#practice" class="nav-practice-btn" aria-label="Open Question Practice Hub">
             <span class="nav-practice-sparkle">✦</span>
             <span>Question Practice</span>
             <span class="nav-practice-badge">NEW</span>
@@ -138,7 +143,7 @@
           <p class="hero-sub">JEE &nbsp;•&nbsp; NEET &nbsp;•&nbsp; West Bengal Board</p>
 
           <div class="hero-cta">
-            <a href="practice.html" target="_blank" class="hero-practice-banner-btn" id="hero-practice-btn">
+            <a href="#practice" class="hero-practice-banner-btn" id="hero-practice-btn">
               <div class="banner-btn-left">
                 <span class="banner-sparkle-icon">✦</span>
                 <div class="banner-text-col">
@@ -747,6 +752,366 @@
 
   </div><!-- /wrapper -->
 
+  <!-- ═════════════════════════════════════════════════════════════════
+       MEDKARMA INFINITE PRACTICE SECTION (SPA WEBAPP VIEW)
+       ═════════════════════════════════════════════════════════════════ -->
+  <section id="practiceSection" class="practice-app-container hidden" aria-label="Infinite Practice Hub">
+    <!-- Dynamic Atmospheric Background -->
+    <div class="practice-bg-container" aria-hidden="true">
+      <div class="stars-layer"></div>
+      <div class="bg-glow bg-glow-1"></div>
+      <div class="bg-glow bg-glow-2"></div>
+      <div class="bg-glow bg-glow-3"></div>
+    </div>
+
+    <div class="practice-app-wrapper">
+
+      <!-- ─── SCREEN 1: BATCH SELECTION ─── -->
+      <main id="batchSelectionView" class="practice-view">
+        <div class="practice-top-bar">
+          <button class="pill-btn-nav" id="btnGoHomeFromBatch" aria-label="Go to Home">
+            <span class="icon-home" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </span>
+            <span>Go to Home</span>
+          </button>
+        </div>
+
+        <section class="practice-hero-card" aria-labelledby="batch-hero-title">
+          <div class="practice-hero-content">
+            <div class="practice-badge">
+              <span class="badge-sparkle">✦</span>
+              <span>Focused Practice Hub</span>
+            </div>
+            <h1 class="practice-title" id="batch-hero-title">
+              Infinite Practice<span class="dot-pink">.</span>
+            </h1>
+            <p class="practice-desc">
+              Choose your class and exam target, select specific subjects and chapters, and build unlimited practice sets instantly.
+            </p>
+          </div>
+          <div class="practice-hero-badge-icon" aria-hidden="true">
+            <div class="grad-mortarboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <div class="section-label-group">
+          <span class="section-micro-tag">TARGET EXAM</span>
+          <h2 class="section-h2">Select your target batch</h2>
+        </div>
+
+        <!-- Dynamic Batches List Container populated by practice.js -->
+        <div class="batch-cards-container" id="batchesListContainer" role="list" aria-label="Available Batches"></div>
+      </main>
+
+      <!-- ─── SCREEN 2: PRACTICE SETUP (SUBJECTS, CHAPTERS, SCOPE) ─── -->
+      <main id="setupView" class="practice-view hidden">
+        <div class="setup-header-row">
+          <div class="setup-header-left">
+            <button class="pill-btn-nav" id="btnBackToBatch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back to Batches</span>
+            </button>
+            <div class="practice-badge practice-room-pill">
+              <span class="pill-spark">⚡</span>
+              <span>Practice Room</span>
+            </div>
+          </div>
+          <div class="setup-header-actions">
+            <button class="pill-btn-nav" id="homeBtn">
+              <span class="icon-home" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </span>
+              <span>Go to Home</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="setup-hero-title-wrap">
+          <h1 class="practice-title">
+            Infinite Practice<span class="dot-pink">.</span>
+          </h1>
+          <p class="practice-desc">
+            Pick a subject, chapter, difficulty, and question count. Practise at your own pace.
+          </p>
+        </div>
+
+        <div class="setup-grid-layout">
+          <!-- Left Column: Steps -->
+          <div class="setup-main-col">
+            <!-- STEP 01: CHOOSE SUBJECT -->
+            <section class="setup-section-block" aria-labelledby="step1-title">
+              <div class="step-meta-row">
+                <span class="step-counter-tag">STEP 01 / CHOOSE SUBJECT</span>
+                <span class="subject-status-pill" id="subjectSelectedTag">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>Subject Selected</span>
+                </span>
+              </div>
+              <h2 class="step-heading" id="step1-title">What do you want to practise?</h2>
+              <p class="step-subheading">Select a subject to view available chapters and topics.</p>
+              <div class="subject-pills-row" id="subjectsRowContainer" role="radiogroup" aria-label="Choose Subject"></div>
+            </section>
+
+            <!-- STEP 02: PICK CHAPTERS -->
+            <section class="setup-section-block" aria-labelledby="step2-title">
+              <div class="step-meta-row">
+                <span class="step-counter-tag">STEP 02 / PICK CHAPTERS</span>
+                <div class="chapter-selection-ctrls">
+                  <span class="selection-count-text" id="selectedChaptersCountBadge">0 / 0 selected</span>
+                  <button class="btn-select-all" id="selectAllChaptersBtn">Select all</button>
+                </div>
+              </div>
+              <h2 class="step-heading" id="step2-title">Select your practice scope</h2>
+
+              <div class="search-chapter-wrap">
+                <div class="search-input-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+                <input type="text" id="chapterSearchInput" class="search-chapter-field" placeholder="Search chapters by name..." autocomplete="off" />
+              </div>
+
+              <div class="chapters-grid" id="chaptersGridContainer" role="group" aria-label="Select Chapters"></div>
+            </section>
+          </div>
+
+          <!-- Right Column: Setup Sidebar -->
+          <aside class="setup-sidebar-card" aria-label="Practice Setup Parameters">
+            <div class="sidebar-header">
+              <div class="sidebar-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="21" x2="4" y2="14"></line>
+                  <line x1="4" y1="10" x2="4" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12" y2="3"></line>
+                  <line x1="20" y1="21" x2="20" y2="16"></line>
+                  <line x1="20" y1="12" x2="20" y2="3"></line>
+                  <line x1="1" y1="14" x2="7" y2="14"></line>
+                  <line x1="9" y1="8" x2="15" y2="8"></line>
+                  <line x1="17" y1="16" x2="23" y2="16"></line>
+                </svg>
+              </div>
+              <div>
+                <h3 class="sidebar-title">Practice Setup</h3>
+                <p class="sidebar-sub">Configure test parameters</p>
+              </div>
+            </div>
+
+            <!-- Difficulty Selector -->
+            <div class="sidebar-block">
+              <div class="sidebar-block-head">
+                <span class="block-label">DIFFICULTY LEVEL</span>
+                <span class="block-hint">SINGLE SELECT</span>
+              </div>
+              <div class="difficulty-grid" role="radiogroup" aria-label="Select Difficulty">
+                <button class="diff-btn diff-card" data-diff="1" role="radio" aria-checked="false">
+                  <span class="diff-name">Easy</span>
+                  <span class="diff-desc">Build confidence</span>
+                </button>
+                <button class="diff-btn diff-card active" data-diff="2" role="radio" aria-checked="true">
+                  <span class="diff-name">Medium</span>
+                  <span class="diff-desc">Stay exam-ready</span>
+                </button>
+                <button class="diff-btn diff-card" data-diff="3" role="radio" aria-checked="false">
+                  <span class="diff-name">Hard</span>
+                  <span class="diff-desc">Stretch your ceiling</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Question Count Selector -->
+            <div class="sidebar-block">
+              <div class="sidebar-block-head">
+                <span class="block-label">QUESTIONS COUNT</span>
+                <span class="block-hint">Max 90</span>
+              </div>
+              <div class="count-pill-wrap" role="radiogroup" aria-label="Select Questions Count">
+                <button class="count-pill" data-count="5">5</button>
+                <button class="count-pill active" data-count="10">10</button>
+                <button class="count-pill" data-count="15">15</button>
+                <button class="count-pill" data-count="20">20</button>
+                <button class="count-pill" data-count="30">30</button>
+                <button class="count-pill" data-count="50">50</button>
+                <button class="count-pill" data-count="90">90</button>
+                <button class="count-pill" id="customCountBtn" data-count="custom">Custom</button>
+              </div>
+              <div class="custom-count-wrapper" id="customCountWrapper" style="display: none; margin-top: 10px;">
+                <div class="custom-input-box">
+                  <input type="number" id="customCountInput" min="1" max="90" placeholder="Type count (1-90)" class="custom-count-input" />
+                  <span class="custom-input-badge">Max 90</span>
+                </div>
+                <span class="custom-count-hint">Type any question count up to 90</span>
+              </div>
+            </div>
+
+            <!-- Launch Practice CTA -->
+            <div class="sidebar-action-wrap">
+              <button class="btn-start-practice" id="startPracticeBtn">
+                <span>Start Practice Test</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+              <p class="launch-hint-text">Instant evaluation with step-by-step KaTeX solutions</p>
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <!-- ─── SCREEN 3: ACTIVE TEST ROOM (QUIZ VIEW) ─── -->
+      <main id="quizView" class="practice-view hidden">
+        <div class="quiz-top-nav">
+          <div class="quiz-top-left">
+            <button class="quiz-exit-btn" id="btnExitTest" title="Exit Test">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div class="quiz-question-counter">
+              <span id="testQCounter">Question 1 / 10</span>
+            </div>
+          </div>
+
+          <div class="quiz-top-right">
+            <div class="quiz-timer-pill" aria-label="Elapsed Time">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span id="testTimerDisplay">00:00</span>
+            </div>
+            <button class="quiz-submit-pill-btn" id="btnSubmitTest">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Submit Test</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Linear Progress Bar -->
+        <div class="quiz-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10">
+          <div class="quiz-progress-fill" id="testProgressBarFill" style="width: 10%;"></div>
+        </div>
+
+        <!-- High-Contrast Question Container Card -->
+        <div class="question-canvas-card">
+          <div class="question-meta-header">
+            <span class="active-chapter-name" id="testQuestionTopicHeader">PRACTICE SET</span>
+            <span class="question-type-badge">Multiple Choice Question</span>
+          </div>
+
+          <div class="question-body-content">
+            <div class="question-text-latex" id="testQuestionStatement">
+              <!-- KaTeX rendered text injected dynamically -->
+            </div>
+          </div>
+
+          <!-- Multiple Choice Options List -->
+          <div class="options-list-container" id="testOptionsStack" role="radiogroup" aria-label="Answer Options"></div>
+
+          <!-- Action Footer -->
+          <div class="question-card-footer">
+            <div class="footer-hint">Select one option</div>
+            <div class="footer-nav-buttons">
+              <button class="quiz-nav-btn btn-prev" id="btnPrev" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>Previous</span>
+              </button>
+              <button class="quiz-nav-btn btn-skip" id="btnSkip">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 4 15 12 5 20 5 4"></polygon>
+                  <line x1="19" y1="5" x2="19" y2="19"></line>
+                </svg>
+                <span>Skip</span>
+              </button>
+              <button class="quiz-nav-btn btn-next" id="btnNext">
+                <span>Next Question</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- ─── SCREEN 4: TEST RESULTS & SCORECARD ─── -->
+      <main id="resultView" class="practice-view hidden">
+        <div class="result-card-container">
+          <div class="result-trophy-badge">🏆</div>
+          <h1 class="result-title">Practice Test Completed!</h1>
+          <p class="result-sub" id="resultBatchSub">Target Examination Practice Set</p>
+
+          <!-- Metrics Grid -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-value" id="resAccuracy">0%</span>
+              <span class="metric-label">Accuracy</span>
+            </div>
+            <div class="metric-card card-green">
+              <span class="metric-value" id="resCorrect">0</span>
+              <span class="metric-label">Correct</span>
+            </div>
+            <div class="metric-card card-red">
+              <span class="metric-value" id="resIncorrect">0</span>
+              <span class="metric-label">Incorrect</span>
+            </div>
+            <div class="metric-card card-amber">
+              <span class="metric-value" id="resTotalQ">0</span>
+              <span class="metric-label">Total Questions</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-value" id="resTimeTaken">00:00</span>
+              <span class="metric-label">Time Taken</span>
+            </div>
+          </div>
+
+          <!-- Result Actions Row -->
+          <div class="result-actions-row">
+            <button class="btn-primary" id="btnRestartTest">
+              <span>Take Another Test</span>
+            </button>
+            <button class="btn-secondary" id="btnChooseBatch">
+              <span>Choose Another Batch</span>
+            </button>
+            <button class="pill-btn-nav" id="resHomeBtn">
+              <span>Back to Home</span>
+            </button>
+          </div>
+
+          <!-- Detailed Solutions & Explanations -->
+          <div class="solutions-review-section">
+            <h3 class="solutions-heading">Detailed Question Review & Explanations</h3>
+            <div class="solutions-list" id="solutionsListContainer"></div>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </section>
+
   <!-- ─── FLOATING TELEGRAM BUTTON ─── -->
   <a href="https://t.me/themedkarma" class="fab" target="_blank" rel="noopener noreferrer"
     aria-label="Join Medkarma on Telegram" id="fab-telegram">
@@ -766,6 +1131,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="js/main.js?v=1.0.1" defer></script>
+  <!-- Practice Hub Engine -->
+  <script src="js/practice.js" defer></script>
 </body>
 
 </html>
