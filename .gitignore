@@ -5,3 +5,8 @@ js/config.js
 *.pem
 .env
 .env.*
+
+# Scratch & backups
+scratch/
+*.bak
+
